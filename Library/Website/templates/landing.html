@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eLibrary
+      {% block title %}
+        {% endblock title %}
+    </title>
+    <link
+    rel="stylesheet"
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+    crossorigin="anonymous"
+  />
+  <link
+    rel="stylesheet"
+    href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+    crossorigin="anonymous"
+  />
+    <link rel="stylesheet" href = "{{ url_for('static', filename = 'style.css') }}"> 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@100;400&family=Mitr:wght@200&family=Noto+Serif&family=Poppins:wght@400;600&family=Sarala&family=Source+Sans+Pro:wght@200&family=Tilt+Neon&display=swap" rel="stylesheet">
+                <!-- Landing Page-->
+<body>
+    <!-- Image Logo-->
+    <nav class="navbar">
+    <img class="logo" src="{{url_for('static', filename='/images/logo.png')}}" vspace="20px" hspace="40px"> 
+    
+    <button class="btn"> Sign Up  </button>
+    <a href="#login">
+    
+    <button class="btn_2"> Log In</button>
+   
+  </a>
+</nav>
+<br>
+</div>
+    <div style="text-align: center; color: black; font-family: Mitr; font-size: 25px;">
+       <br> <h2 style="font-size: 40px; ">  Welcome to the e-Library database </h2>
+        
+    <center><p>
+        e-Library is a school library UI providing a modern and 
+        intuitive way  for students   and faculty to access the resources they need. <br>
+        With our user-friendly interface, discovering new books and resources has never been easier. 
+      </p>  </center>
+      
+      <p style="font-size: 25px; color:black;"> <br> <b> Please  register to access e-Library <p style="color: black;font-size: 18px;" >or</p>  <p style="font-size: 18px; color: black;" >Log in to your account </b> </p>
+      </div>
+
+    
+      <!--book-->
+    
+     <img src="{{url_for('static', filename='/images/book2.gif')}}" id="book2">
+     <img src="{{url_for('static', filename='/images/book4.gif')}}" id="book4">
+</body>
+</html>
