@@ -33,27 +33,9 @@
     <nav class="navbar">
     <img class="logo" src="{{url_for('static', filename='/images/logo.png')}}" vspace="20px" hspace="40px"> 
     
-   <a href="/sign-up"> <button class="btn"> Sign Up  </button> </a>
-    <a href="/login"> <button class="btn_2"> Log In</button> </a>
 </nav>
-<br>
-</div>
-    <div style="text-align: center; color: black; font-family: Mitr; font-size: 20px;">
-       <br> <h2 style="font-size: 40px; ">  Welcome to the e-Library database </h2>
-        
-    <center><p>
-        e-Library is a school library UI providing a modern and 
-        intuitive way  for students   and faculty to access the resources they need. <br>
-        With our user-friendly interface, discovering new books and resources has never been easier. 
-      </p>  </center>
-      
-      <p style="font-size: 25px; color:black;"> <br> <b> Please  register to access e-Library <p style="color: black;font-size: 25px;" >or</p>  <p style="font-size: 18px; color: black;" >Log in to your account </b> </p>
-      </div>
+{% block content %} 
 
-    
-      <!--book-->
-    
-     <img src="{{url_for('static', filename='/images/book2.gif')}}" id="book2">
-     <img src="{{url_for('static', filename='/images/book4.gif')}}" id="book4">
+{% endblock %}
 </body>
 </html>

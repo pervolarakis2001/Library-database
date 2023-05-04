@@ -1,22 +1,46 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<link rel="stylesheet" href="style.css"> 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@100;400&family=Mitr:wght@200&family=Noto+Serif&family=Poppins:wght@400;600&family=Sarala&family=Source+Sans+Pro:wght@200&family=Tilt+Neon&display=swap" rel="stylesheet">
-<body>
-    <nav class="navbar">
-        <img class="logo" src="images/logo.png" vspace="20px" hspace="40px"> 
-    </nav>
-</body>
-</html>
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+    <div class="card-header">
+      <div class="text-header">Register</div>
+    </div>
+    <div class="card-body">
+      <form action="#">
+        <div class="form-group">
+            <label for="username">First Name:</label>
+            <input required="" class="form-control" name="username" id="username" type="text">
+          </div>
+          <div class="form-group">
+            <label for="username">Last Name:</label>
+            <input required="" class="form-control" name="username" id="username" type="text">
+          </div>
+        
+        <div class="form-group">
+          <label for="email">Email:</label>
+          <input required="" class="form-control" name="email" id="email" type="email">
+        </div>
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input required="" class="form-control" name="username" id="username" type="text">
+          </div>
+        <div class="form-group">
+          <label for="password">Password:</label>
+          <input required="" class="form-control" name="password" id="password" type="password">
+        </div>
+        <div class="form-group">
+          <label for="School">School:</label>
+          <input required="" class="form-control" name="confirm-password" id="confirm-password" type="password">
+        </div>
+        <label for="Ιδιότητα" ><b> Status:</b></label>
+        <label for="html">Student</label>
+        <input type="radio" id="radio_student" name="user_type" >
+          <label for="Tacher">Teacher</label>
+          <input type="radio" id="css" name="user_type" value="CSS">
+          <label for="Operator">Operator</label>
+          <input type="radio" id="javascript" name="user_type" value="JavaScript">
+       <center><input type="submit" class="btn_3" value="submit">  </center>  </form>
+    </div>
+  </div>
+
+{% endblock %}
