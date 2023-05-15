@@ -107,16 +107,18 @@ having count(bor.borrowed_id) > 1;
 
 -- 3.2.3
 
-select school_users_id, avg(z.num_of_ratings_per_borrower) as avg_num_of_ratings_per_borrower from 
-	(select school_users_id, count(rating_id) as num_of_ratings_per_borrower from ratings group by school_users_id) z
-    group by school_users_id;
+--select school_users_id, avg(z.num_of_ratings_per_borrower) as avg_num_of_ratings_per_borrower from 
+	--(select school_users_id, count(rating_id) as num_of_ratings_per_borrower from ratings group by school_users_id) z
+   -- group by school_users_id;
 
 
-select category, avg(z.num_of_ratings_per_category) as avg_num_of_ratings_per_category from 
-	(select cat.category, count(r.rating_id) as num_of_ratings_per_category from ratings r inner join category_table cat on cat.ISBN = r.ISBN
-    group by cat.category) z
-    group by category;
+--select category, avg(z.num_of_ratings_per_category) as avg_num_of_ratings_per_category from 
+--	(select cat.category, count(r.rating_id) as num_of_ratings_per_category from ratings r inner join category_table cat on cat.ISBN = r.ISBN
+  --  group by cat.category) z
+ --   group by category;
 
+select avg(rating_score) as score,school_users_id,category from ratings r INNER JOIN category_table c  on c.Isbn = r.ISBN WHERE 
+             r.school_users_id = {sch_user_id} and c.category = '{category}'
 
 -- 3.3.1
 select * from reservations;
