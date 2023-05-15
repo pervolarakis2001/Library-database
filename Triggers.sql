@@ -29,7 +29,7 @@ BEGIN
  SIGNAL SQLSTATE '45000'
            SET MESSAGE_TEXT = 'check constraint on reservations failed - A user cannot make reservation if a book has not been returned on time.';
     END IF;
-IF (new.ISBN = (SELECT ISBN FROM borrowings   WHERE school_users_id =  new.school_users_id AND return_date is NULL))  THEN 
+IF (new.ISBN = (SELECT ISBN FROM borrowings   WHERE school_users_id =  new.school_users_id  AND return_date is null AND ISBN=new.ISBN) ) THEN
 	SIGNAL SQLSTATE '45000'
            SET MESSAGE_TEXT = 'check constraint on reservations failed - A user cannot make reservation if  if the same user has already borrowed the title.';
     END IF;
