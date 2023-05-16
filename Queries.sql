@@ -57,14 +57,18 @@ LEFT JOIN borrowings bor ON bor.ISBN = aut.ISBN
 WHERE not exists (select 1 from borrowings inner join author_table aut1 on bor.ISBN = aut1.ISBN );
 
 -- 3.1.5
-select op.operator_id, us.First_name, us.Last_name,count(bor.borrowed_id) from users us
-inner join operator op on op.operator_id = us.user_id
-inner join borrowings bor on bor.operator_id = op.operator_id  
-inner join operator op1 on op1.operator_id = op.operator_id 
-group by bor.operator_id 
-having count(bor.borrowed_id) > 20; 
--- havent put 1 year interval and probably the equality of operator borrowings  
 
+select op.operator_id, us.First_name, us.Last_name,count(bor.borrowed_id) from users us
+                    inner join operator op on op.operator_id = us.user_id
+                    inner join borrowings bor on bor.operator_id = op.operator_id  
+                    inner join operator op1 on op1.operator_id = op.operator_id WHERE YEAR(bor.borrowing_date) IN (
+                        SELECT DISTINCT YEAR(borrowing_date)
+                        FROM borrowings
+                    )
+                    group by bor.operator_id 
+                    having count(bor.borrowed_id) > 20 ; 
+-- havent put 1 year interval and probably the equality of operator borrowings  
+-- ta evala egw - DIMITRIS
 -- 3.1.6 
 -- 2OO books 100 of them have 2 categories
 SELECT cat.category, cat.ISBN FROM category_table cat INNER JOIN borrowings bor ON bor.ISBN = cat.ISBN   WHERE cat.ISBN in(
