@@ -26,12 +26,25 @@ WHERE schu.status = "teacher" AND borrowing_date > DATE_ADD(curdate(),interval -
 
 
 -- 3.1.3 
-select schu.school_users_id, us.First_name, us.Last_name, count(bor.borrowed_id) from books b
-INNER JOIN  borrowings bor ON bor.ISBN = b.ISBN
-INNER JOIN school_users schu ON bor.school_users_id = schu.school_users_id
-INNER JOIN users us ON us.user_id = schu.school_users_id
-WHERE year(CURDATE()) - DATE_FORMAT(schu.age,"%Y")  < 40 AND schu.status = "teacher";
+--select schu.school_users_id, us.First_name, us.Last_name, count(bor.borrowed_id) from books b
+--INNER JOIN  borrowings bor ON bor.ISBN = b.ISBN
+--INNER JOIN school_users schu ON bor.school_users_id = schu.school_users_id
+--INNER JOIN users us ON us.user_id = schu.school_users_id
+--WHERE year(CURDATE()) - DATE_FORMAT(schu.age,"%Y")  < 40 AND schu.status = "teacher";
 -- exun daneistei ta perissotera vivlia, idk ti ennoei me ayto 
+
+SELECT subquery.First_name, subquery.Last_name, MAX(subquery.borrow_count) AS max_borrow_count
+                FROM (
+                SELECT schu.school_users_id, us.First_name, us.Last_name, COUNT(bor.borrowed_id) AS borrow_count
+                FROM books b
+                INNER JOIN borrowings bor ON bor.ISBN = b.ISBN
+                INNER JOIN school_users schu ON bor.school_users_id = schu.school_users_id
+                INNER JOIN users us ON us.user_id = schu.school_users_id
+                WHERE YEAR(CURDATE()) - DATE_FORMAT(schu.age, "%Y") < 40 
+                    AND schu.status = "teacher"
+                GROUP BY schu.school_users_id, us.First_name, us.Last_name
+                ) AS subquery
+                GROUP BY subquery.First_name, subquery.Last_name; 
 
 -- 3.1.4
 SELECT DISTINCT aut.author FROM author_table aut
