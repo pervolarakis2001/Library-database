@@ -1,0 +1,54 @@
+{% extends "base3.html" %}  {% block title %}Operator
+{% endblock title %}
+{% block content %}
+
+
+<center><h1>Requests</h1></center>
+{% if reserve%}
+<div class="row" id="row" >            
+    <div class="col-md-12" >     
+        <div class="card" id="card-container" style="width: 1300px; font-size: 15px;">
+            <div class="card-body" >
+                <table class="table table-striped table-sm table-borderless">
+                    <thead>
+                        <tr>
+                            <th>reservation_id</th>
+                            <th>isbn</th>
+                            <th>title </th>
+                            <th>reservation_date</th>
+                            <th>school_users_id</th>
+                             <th></th> 
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r  in reserve %}
+                        <tr>
+                            <td> {{ r.reservation_id }} </td>
+                            <td> {{ r.ISBN }} </td>
+                            <td> {{ r.title }} </td>
+                            <td> {{ r.reservation_date }} </td>
+                            <td> {{ r.school_users_id}} </td>
+                            <td>
+                           <td>
+                           
+                        </tr>
+                     
+                        {%endfor%}
+                    </tbody>
+                </table>
+              
+            </div>
+        </div>
+    </div>
+   <br>
+  
+    <p></p>
+</div>
+</div>
+
+{%else%}
+<h2>There are no waitings</h2>
+{%endif%}
+{% endblock %}

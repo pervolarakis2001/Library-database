@@ -1,0 +1,66 @@
+{% extends "base3.html" %}  {% block title %}Admin_school_add
+{% endblock title %}
+{% block content %}
+
+
+<div class="card-body">
+    <h1>  Change Book information</h1>
+    <form action="/operator/book/change",  method="POST">
+      <div class="form-group">
+          
+       
+      
+      <div class="form-group">
+        <label for="isbn">ISBN:</label>
+        <input  class="form-control" name="isbn"  type="text">
+      </div>
+      
+      <div class="form-group">
+          <label for="title">title:</label>
+          <input class="form-control" name="title" type="text">
+        </div>
+      <div class="form-group">
+        <label for="publisher">publisher:</label>
+        <input class="form-control" name="publisher" type="text">
+      </div>
+      <div class="form-group">
+        <label for="num_of_pages">Num Of Pages:</label>
+        <input class="form-control" name="num_of_pages"  type="text">
+      </div>
+      <div class="form-group">
+        <label for="summary">summary:</label>
+        <input class="form-control" name="summary"  type="text">
+      </div>
+      <div class="form-group">
+        <label for="avail_copies">Available Copies:</label>
+        <input class="form-control" name="avail_copies"  type="text">
+      </div>
+      <div class="form-group">
+        <label for="language">Language:</label>
+        <input class="form-control" name="language"  type="text">
+      </div>
+      <div class="form-group">
+        <label for="keywords">KeyWords:</label>
+        <input class="form-control" name="keywords"  type="text">
+      </div>
+      <div class="form-group">
+        <label for="author">Author (add comma to declare more than one author):</label>
+        <input  class="form-control" name="author"  type="text">
+      </div>
+      <div class="form-group">
+        <label for="category">category (add comma to declare more than one author):</label>
+        <input class="form-control" name="category"  type="text">
+      </div>
+      
+      
+      <center><input type="submit" class="btn_3" value="save">  </center>  
+      </form>
+    </div>
+  </div>
+       
+       
+
+
+        
+
+{% endblock content %}

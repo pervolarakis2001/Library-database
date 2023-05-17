@@ -1,0 +1,60 @@
+{% extends "base4.html" %}  {% block title %} School_user_book
+{% endblock title %}
+{% block content %}
+
+
+{% for ima in image %}
+<div style="display: grid;">
+ <img src="{{ ima.image.decode('utf-8') }}" style="position: absolute; left: 280px; top: 100px;width: 250px; margin-left: 10px;">
+ 
+ 
+ <div class="card" style="border-radius: 20px; ">
+    <div class="card-body">
+        {% for t in title %}
+      <h5 class="card-title"> <b> Title</b>: {{ t.title}}</h5>
+      {% for sum in summary%}
+      <p class="card-text"><b>Summary</b>: {{sum.summary}} </p>
+      {%endfor%}
+      {%endfor%}
+    </div>
+  </div>
+  
+  <div class="card" style="border-radius: 20px;">
+    <div class="card-body">
+        {% if rating %}
+       
+      <h5 class="card-title"> <b> Rating</b>: {{ rating}}</h5>
+      
+      {%else%}
+      <h5 class="card-title"> <b> Rating</b>: NONE
+      {%endif%}
+      {% if comments%}
+      {% for  c in comments%}
+      <p class="card-text"><b> Comment</b>: {{c.comments}} </p>
+      {%endfor%}
+      {%else%}
+      <p class="card-text"><b> Comment</b>: NONE </p>
+        {%endif%}
+    </div>
+  </div>
+  
+  <div class="card" style="border-radius: 20px;">
+    <div class="card-body">
+  <div class="form-group">
+    <form action="/rating/book" method = "POST">
+    <label for="rating">Leave your rating here:</label>
+    <input type="text"  name="rating" class="form-control" id="input1" placeholder="Enter rating in Linkert scale(1-5)">
+    <hr>
+    <label for="comment">Leave your comment here:</label>
+    <input type="text" class="form-control" name="comment" id="input1" placeholder="Write your opinion about the book" style="height: 50px;">
+    <br>
+    <CEnter><input type="submit" class="btn_3" value="submit"></CEnter>
+  </div>
+</div>
+</div>
+</form>
+</div>
+{%endfor%}
+
+
+{% endblock content %}

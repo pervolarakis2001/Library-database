@@ -1,0 +1,75 @@
+{% extends "base3.html" %}  {% block title %}Operator
+{% endblock title %}
+{% block content %}
+
+<center><h1>Requests</h1></center>
+<div class="row" id="row" >            
+    <div class="col-md-12" >     
+        <div class="card" id="card-container" style="width: 1000px; font-size: 15px;">
+            <div class="card-body" >
+                <table class="table table-striped table-sm table-borderless">
+                    <thead>
+                        <tr>
+                            <th >First_name</th>
+                            <th>Last_name</th>
+                            <th>Email</th>  
+                            <th>Phone</th>                         
+                            <th>school</th>
+                            <th>status</th>
+                            <th>accept</th>
+                            <th>deny</th>
+                            <th></th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                       {% for info in info_op %}
+                        <tr>
+                            <td> {{ info.First_name }} </td>
+                            <td> {{ info.Last_name }} </td>
+                            <td> {{ info.email }} </td>
+                            <td> {{ info.phone_number }} </td>
+                           <td> {{ info.school }} </td>  
+                           <td> {{ info.status }} </td>  
+                           <td> {{ info.age}} </td>  
+                         
+                           <td>
+                           <form action="/accept_request_op" method="POST">
+                            <input type="hidden" name="first_name" value="{{ info.FirstName }}">
+                            <input type="hidden" name="last_name" value="{{ info.LastName }}">
+                            <input type="hidden" name="email" value="{{ info.email }}">
+                            <input type="hidden" name="phone" value="{{ info.phone_number }}">
+                            <input type="hidden" name="status" value="{{ info.status }}">
+                            <input type="hidden" name="school" value="{{ info.school }}">
+                            <input type="hidden" name="age" value="{{ info.age }}">
+                            <button style="border:0"> <i class="fa-solid fa-circle-check" style="color: green;"></i> </button>                            
+                        </form>
+                    </td>
+                    <td>
+                        <form action="/deny_request_op" method="POST">
+                            <input type="hidden" name="first_name" value="{{ info.FirstName }}">
+                            <input type="hidden" name="last_name" value="{{ info.LastName }}">
+                            <input type="hidden" name="email" value="{{ info.email }}">
+                            <input type="hidden" name="phone" value="{{ info.phone_number }}">
+                            <input type="hidden" name="status" value="{{ info.status }}">
+                            <input type="hidden" name="school" value="{{  info.school }}">  
+                            <input type="hidden" name="age" value="{{ info.age }}">                     
+                               <button style="border:0"> <i class="fa-solid fa-ban" style="color: red;"></i></button>                       
+                            </form>
+                            </td>
+                        </tr>
+                     
+                        {%endfor%}
+                    </tbody>
+                </table>
+              
+            </div>
+        </div>
+    </div>
+   <br>
+  
+    <p></p>
+</div>
+</div>
+
+{% endblock %}

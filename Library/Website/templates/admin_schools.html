@@ -1,0 +1,160 @@
+{% extends "base2.html" %}  {% block title %}Admin_school
+{% endblock title %}
+{% block content %}
+
+
+<a href='/admin/schools/add'>
+    <button class="btn btn-success" style="position: relative; right: 10px;" >
+        + School
+    </button>
+</a> 
+        <div class="row" id="row" >            
+            <div class="col-md-12" >     
+                <div class="card" id="card-container" style="width: 1300px; font-size: 15px;">
+                    <div class="card-body" >
+                        <table class="table table-striped table-sm table-borderless">
+                            <thead>
+                                <tr>
+                                    <th>school_id</th>
+                                    <th>operator_id</th>
+                                    <th>School name</th>
+                                    <th>postcode</th>
+                                    <th>city</th>
+                                    <th>email</th>
+                                    <th>Primary Fist name</th>
+                                    <th>Primary Last name </th>     
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sch in school %}
+                                <tr>
+                                    <td> {{ sch.school_id}} </td>
+                                    <td> {{ sch.operator_id }} </td>
+                                    <td> {{ sch.name }} </td>
+                                    <td> {{ sch.postcode }} </td>
+                                    <td> {{ sch.city}} </td>
+                                    <td> {{ sch.email }} </td>
+                                    <td> {{ sch.pr_First_name}} </td>
+                                    <td> {{ sch.pr_Last_name }} </td>
+                                    
+                                    <td>
+                                        <a type="button" onclick="setModalFields(this)"
+                                        data-toggle="modal" 
+                                        data-op="{{sch.operator_id}}"
+                                        data-name="{{sch.name}}"  data-id= "{{sch.school_id}}"
+                                        data-email="{{sch.email}}"
+                                        data-city="{{sch.city}}" data-pos="{{sch.postcode}}" 
+                                        data-prF="{{sch.pr_First_name}}" data-prL="{{sch.pr_Last_name}}"
+                                        data-bs-toggle = "modal"
+                                        data-bs-target="#editModal">
+                                        </a>
+                                    </td>
+                                   
+                                    
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+           <br>
+            
+            <p></p>
+        </div>
+    </div>
+    
+    <div id="editModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Update school</h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal" id="modal-form">
+                        {{ form.hidden_tag() }}
+                        <div style="text-align: center;">
+                            <p><b>Edit school with ID :
+                            <input type="text" name="id" id="id" readonly></b></p>
+                            
+                    
+                               
+                            <p>School id :
+                                {{ form.id(id ="school_id", required = False) }}</p>
+                               
+                            <p>School Name :
+                            {{ form.name(id = "name", required = False) }}</p>
+                                                      
+                            <p>School operator :
+                                {{ form.op(id = "operator_id", required = False) }}</p>
+                            
+                          
+                            <p>
+                                City :
+                                {{ form.city(id = "city", required = False) }}
+                            </p>
+                            <p>
+                                Postal Code :
+                                {{ form.pos(id = "postcode", required = False) }}
+                            </p>
+
+                            <p>
+                                Email:
+                                {{ form.email(id = "email", required = False) }}  
+                            </p>
+                            <p>
+                               Primary First name :
+                                {{ form.prF(id = "pr_First_name", required = False) }}
+                            </p>
+                            <p>
+                                Primary Last name :
+                                 {{ form.prL(id = "pr_Last_name", required = False) }}
+                             </p>
+                            <p><input type="text" name="type" id="org-type" readonly></b></p>
+                            
+                            
+                        </div>
+                       
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    {{ form.submit(class = "btn btn btn-success", form = "modal-form", value = "Update") }}
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+    
+        </div>
+    
+    
+    
+    
+
+
+
+<script>
+    function setModalFields(row) {
+        document.getElementById("id").value = row.getAttribute("data-id");
+        document.getElementById("Name").value = row.getAttribute("data-name");
+       
+        document.getElementById("operator_id").value = row.getAttribute("data-op");
+        document.getElementById("email").value = row.getAttribute("data-email");
+        document.getElementById("pr_First_name").value = row.getAttribute("data-prF");       
+        document.getElementById("pr_Last_name").value = row.getAttribute("data-prL");
+        document.getElementById("city").value = row.getAttribute("data-city");
+        document.getElementById("postcode").value = row.getAttribute("data-pos");
+       
+       
+        document.getElementById("modal-form").action = "\admin\schools\add" + document.getElementById("id").value;
+        document.getElementById("modal-form").method = "POST";
+        // document.getElementById("submit").addEventListener("click", (e) => {e.preventDefault();});
+        // commented line above would prevent the default behavior of the submit button, that is, sending the
+        // form data with a post request to the determined address and subsequently closing the pop-up
+    }
+    
+
+</script>
+
+{% endblock %}

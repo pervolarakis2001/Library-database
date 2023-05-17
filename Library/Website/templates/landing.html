@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>eLibrary
-      {% block title %}
+    <title>
+      {% block title %}eLibrary
         {% endblock title %}
     </title>
     <link
@@ -32,11 +32,11 @@
     <!-- Image Logo-->
     <nav class="navbar">
     <img class="logo" src="{{url_for('static', filename='/images/logo.png')}}" vspace="20px" hspace="40px"> 
-    
+  
    <a href="/sign-up"> <button class="btn"> Sign Up  </button> </a>
     <a href="/login"> <button class="btn_2"> Log In</button> </a>
 </nav>
-<br>
+<br> <br> 
 </div>
     <div style="text-align: center; color: black; font-family: Mitr; font-size: 20px;">
        <br> <h2 style="font-size: 40px; ">  Welcome to the e-Library database </h2>
@@ -47,7 +47,7 @@
         With our user-friendly interface, discovering new books and resources has never been easier. 
       </p>  </center>
       
-      <p style="font-size: 25px; color:black;"> <br> <b> Please  register to access e-Library <p style="color: black;font-size: 25px;" >or</p>  <p style="font-size: 25px; color: black;" >Log in to your account </b> </p>
+      <p style="font-size: 25px; color:black;"> <br> <b> Please   <a href="/sign-up" style="color: black;">register </a> to access e-Library <p style="color: black;font-size: 25px;" >or</p>  <p style="font-size: 25px; color: black;" >  <a href="/login" style="color: black";>Log in </a>to your account </b> </p>
       </div>
 
     

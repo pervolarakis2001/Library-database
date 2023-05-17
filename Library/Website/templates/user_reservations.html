@@ -1,0 +1,56 @@
+{% extends "base4.html" %}  {% block title %} School_user_book
+{% endblock title %}
+{% block content %}
+
+
+
+<div class="row" id="row" >            
+    <div class="col-md-12" >     
+        <div class="card" id="card-container" style="width: 1300px; font-size: 15px;">
+            <div class="card-body" >
+                <table class="table table-striped table-sm table-borderless">
+                    <thead>
+                        <tr>
+                            <th>reservation_id</th>
+                            <th>isbn</th>
+                            <th>title </th>
+                            <th>reservation_date</th>
+                            <th>school_users_id</th>
+                             <th></th> 
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r  in reserve %}
+                        <tr>
+                            <td> {{ r.reservation_id }} </td>
+                            <td> {{ r.ISBN }} </td>
+                            <td> {{ r.title }} </td>
+                            <td> {{ r.reservation_date }} </td>
+                            <td> {{ r.school_users_id}} </td>
+                            <td>
+                              <form action="/trash_request" method="POST">
+                                <input type="hidden" name="isbn" value="{{ r.ISBN}}">
+                                <input type="hidden" name="reservation_id" value="{{ r.reservation_id}}">
+                                <input type="hidden" name="title" value="{{ r.title }}">   
+                                <input type="hidden" name="reservation_date" value="{{r.reservation_date}}">  
+                                <input type="hidden" name="school_users_id" value="{{ r.school_users_id }}">                      
+                                   <button style="border:0"> <i class="fa-solid fa-trash-can" style="color: red;"></i></i></button>                       
+                                </form>  
+                            </td>
+                            
+                            {%endfor%}
+                        </tr>
+                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+   <br>
+    
+    <p></p>
+</div>
+</div>
+
+{% endblock content %}

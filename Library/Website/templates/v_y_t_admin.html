@@ -1,0 +1,44 @@
+{% extends "base2.html" %}  {% block title %}Administrator 
+{% endblock title %}
+{% block content %}
+ 
+
+         
+    
+     
+    
+      <div class="row" id="row" >            
+        <div class="col-md-12" >     
+            <div class="card" id="card-container" >
+                <div class="card-body" >
+                    <table class="table table-striped table-sm table-borderless">
+                        <thead>
+                            <tr>
+                                <th>number of borrowimgs</th>
+                                <th>Teacher: First name</th>
+                                <th>Teacher: Last name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                           
+                            {% for sch in reserve %}
+                            <tr>
+                                <td> {{ sch.max_borrow_count}} </td>          
+                                <td> {{ sch.First_name}} </td>                        
+                                <td> {{ sch.Last_name }} </td>
+                                           
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+       <br>
+        
+        <p></p>
+    </div>
+    </div>
+
+     
+{% endblock %}

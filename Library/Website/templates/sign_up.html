@@ -1,4 +1,5 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% block title %}SignUp
+{% endblock title %}
 {% block content %}
 
 <div class="card">
@@ -6,19 +7,27 @@
       <div class="text-header">Register</div>
     </div>
     <div class="card-body">
-      <form action="#">
+      <form action="#",  method="POST">
         <div class="form-group">
-            <label for="username">First Name:</label>
-            <input required="" class="form-control" name="username" id="username" type="text">
+            <label for="FirstName">First Name:</label>
+            <input required="" class="form-control" name="FirstName" id="username" type="text">
           </div>
           <div class="form-group">
-            <label for="username">Last Name:</label>
-            <input required="" class="form-control" name="username" id="username" type="text">
+            <label for="LastName">Last Name:</label>
+            <input required="" class="form-control" name="LastName" id="username" type="text">
           </div>
         
         <div class="form-group">
+          <label for="phone">Phone:</label>
+          <input required="" class="form-control" name="phone" id="email" type="text">
+        </div>
+        <div class="form-group">
           <label for="email">Email:</label>
           <input required="" class="form-control" name="email" id="email" type="email">
+        </div>
+        <div class="form-group">
+          <label for="age">Age:</label>
+          <input required="" class="form-control" name="age" id="email" type="date">
         </div>
         <div class="form-group">
             <label for="username">Username:</label>
@@ -30,17 +39,55 @@
         </div>
         <div class="form-group">
           <label for="School">School:</label>
-          <input required="" class="form-control" name="confirm-password" id="confirm-password" type="text">
+          <input required="" class="form-control" name="School" id="confirm-password" type="text">
         </div>
-        <label for="Ιδιότητα" ><b> Status:</b></label>
-        <label for="html">Student</label>
-        <input type="radio" id="radio_student" name="user_type" >
-          <label for="Tacher">Teacher</label>
-          <input type="radio" id="css" name="user_type" value="CSS">
-          <label for="Operator">Operator</label>
-          <input type="radio" id="javascript" name="user_type" value="JavaScript">
-       <center><input type="submit" class="btn_3" value="submit">  </center>  </form>
+        <label for="user_type" ><b> Status:</b></label>
+
+        <label for="user_type" >School user</label>
+        <input type="radio"  name="user_type" value="School_user" id="sch_users" onclick="showHideRadio()">
+       
+          <label for="user_type">Operator</label>
+          <input type="radio"  name="user_type" value="operator" id="operator" onclick="showHideRadio()">
+      
+         
+         
+
+
+          <div id="additionalRadioGroup" style="display: none;">
+              <div class="form-group">
+                  <div class="form-check">
+                      <input class="form-check-input" type="radio" name="status"  id="additionalOption1" value="student">
+                      <label class="form-check-label" for="student">
+                         student
+                      </label>
+                  </div>
+                  <div class="form-check">
+                      <input class="form-check-input" type="radio" name="status" id="additionalOption2" value="teacher">
+                      <label class="form-check-label" for="teacher">
+                         teacher
+                      </label>
+                  </div>
+              </div>
+          </div>
+   
+
+       <center><input type="submit" class="btn_3" value="submit">  </center>  
+      </form>
     </div>
   </div>
+  <script>
+    function showHideRadio() {
+        var option1 = document.getElementById("sch_users");
+        var option2 = document.getElementById("operator");
+        var option3 = document.getElementById("admin");
+        var additionalRadioGroup = document.getElementById("additionalRadioGroup");
 
+        if (option1.checked) {
+            additionalRadioGroup.style.display = "block";
+        } 
+        else if (option2.checked || option3.checked){
+          additionalRadioGroup.style.display = "none";
+        }
+    }
+</script>
 {% endblock %}

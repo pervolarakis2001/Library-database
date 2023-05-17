@@ -1,0 +1,121 @@
+{% extends "base3.html" %}  {% block title %}Operator
+{% endblock title %}
+{% block content %}
+
+<h2>Average Ratings per borrower and category</h2>
+<center>
+    <div class="card-body" style="width: 500px; text-align: left;">
+       
+        <form action="/find_rating_op",  method="POST">
+          <div class="form-group">
+          <div class="form-group">
+            <label for="user_id">User ID:</label>
+            <input required="" class="form-control" name="user_id"  type="text">
+          </div>
+          
+          
+          <div class="form-group">
+            <label for="category">category:</label>
+            <input class="form-control" name="category" type="text">
+          </div>
+          <center><input type="submit" class="btn_3" value="submit">  </center>  
+          </form>
+        </div>
+      </div>
+    
+      {% if searched %}
+    
+      <div class="row" id="row" >            
+        <div class="col-md-12" >     
+            <div class="card" id="card-container" style="width: 1300px; font-size: 15px;">
+                <div class="card-body" >
+                    <table class="table table-striped table-sm table-borderless">
+                        <thead>
+                            <tr>
+                                <th> Average rating </th>
+                                <th>category </th>
+                                <th>school user</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                           
+                            {% for sch in books %}
+                            <tr>
+                                <td> {{ sch.score}} </td>                        
+                                <td> {{ sch.category }} </td>   
+                                <td> {{ sch.school_users_id }} </td>
+                                 
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+       <br>
+        
+        <p></p>
+    </div>
+    </div>
+{% else %}
+<center><h2> <b>Requests:</b> </h2></center>
+{% if inf_rat%}
+<div class="row" id="row" >            
+    <div class="col-md-12" >     
+        <div class="card" id="card-container">
+            <div class="card-body">
+                <table class="table table-striped table-sm table-borderless"  id= "myTable" style="border-radius: 15px;" >
+                    <thead>
+                        <tr>
+                            <th >ISBN</th>
+                            <th>student id</th>                        
+                            <th>comment</th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                       {% for info in inf_rat %}
+                        <tr>
+                            <td> {{ info.ISBN }} </td>
+                            <td> {{ info.school_users_id }} </td>
+                           <td> {{ info.comments }} </td> 
+                           <td>
+                           <form action="/publish_rating" method="POST">
+                            <input type="hidden" name="isbn" value="{{ info.ISBN}}">
+                            <input type="hidden" name="student_id" value="{{ info.school_users_id}}">
+                            <input type="hidden" name="comments" value="{{ info.comments }}">
+                           
+                            <button style="border:0"> <i class="fa-solid fa-circle-check" style="color: green;"></i> </button>                            
+                        </form>
+                    </td>
+                    <td>
+                        <form action="/deny_rating" method="POST">
+                            <input type="hidden" name="isbn" value="{{ info.ISBN}}">
+                            <input type="hidden" name="student_id" value="{{ info.school_users_id}}">
+                            <input type="hidden" name="comments" value="{{ info.comments }}">                       
+                               <button style="border:0"> <i class="fa-solid fa-ban" style="color: red;"></i></button>                       
+                            </form>
+                            </td>
+                        </tr>
+                     
+                        {%endfor%}
+                    </tbody>
+                </table>
+              
+            </div>
+        </div>
+    </div>
+   <br>
+  
+    <p></p>
+</div>
+</div>
+
+{%else%}
+<h2>There are no requests</h2>
+{%endif%}
+{%endif%}
+{% endblock %}

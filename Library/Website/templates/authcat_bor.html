@@ -1,0 +1,76 @@
+{% extends "base2.html" %}  {% block title %}Administrator 
+{% endblock title %}
+{% block content %}
+ 
+<h3> Please enter category  </h3>
+<center>
+    <div class="card-body" style="width: 500px; text-align: left;">
+       
+        <form action="/authcat_admin/search",  method="POST">
+          <div class="form-group">
+          <div class="form-group">
+            <label for="category">category:</label>
+            <input required="" class="form-control" name="category"  type="text" >
+          </div>
+          
+          <center><input type="submit" class="btn_3" value="submit">  </center>  
+      </form>
+    </div>
+  </div>
+         
+    
+      {% if searched %}
+    
+      <div class="row" id="row" >            
+        <div class="col-md-12" >     
+            <div class="card" id="card-container" >
+                <div class="card-body" >
+                    <table class="table table-striped table-sm table-borderless">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Teachers: First name</th>
+                                <th>Teachers: Last name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                           
+                            {% for sch in reserve %}
+                            <tr>
+                                <td> {{ sch.category}} </td>                                                       
+                                <td> {{ sch.First_name }} </td>
+                                <td> {{ sch.Last_name }} </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                   <hr>
+                   
+                    <table class="table table-striped table-sm table-borderless">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Author</th>                           
+                            </tr>
+                        </thead>
+                        <tbody>
+                           
+                            {% for sch in reserve_2 %}
+                            <tr>
+                                <td> {{ sch.category}} </td>                        
+                                <td> {{ sch.author }} </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+       <br>
+        
+        <p></p>
+    </div>
+    </div>
+{%endif%}
+     
+{% endblock %}

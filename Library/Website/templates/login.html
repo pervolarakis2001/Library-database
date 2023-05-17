@@ -1,20 +1,22 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% block title %}LogIn
+{% endblock title %}
 {% block content %}
 
 <img src="{{url_for('static', filename='/images/education.gif')}}" id="educ">
 <div class="login-box" >
-    <form >
+    <form  method='POST' >
       <div class="user-box">
-        <input type="text" name="" required="">
-        <label>Username</label>
+        <input type="text" name="username" required="">
+        <label for="username">Username</label>
       </div>
       <div class="user-box">
-        <input type="password" name="" required="">
-        <label>Password</label>
+        <input type="password" name="password" required="">
+        <label for="password">Password</label>
       </div><center>
-      <a href="#">
+          <button>
              SEND 
-      </a></center>
+            </button>
+      </center>
     </form> 
   </div>
 
