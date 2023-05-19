@@ -6,7 +6,6 @@ from Website import app, db  # initially created by __init__.py, need to be used
 from Website.model import *
 import subprocess
 from datetime import date
-import tempfile
 import json
 import os
 
@@ -250,7 +249,6 @@ def admin():
 
 @app.route('/logout')
 def logout(): 
-    
     session.clear()
     return redirect('/')
 
@@ -283,6 +281,7 @@ def admin_schools_add():
         pr_Last_name = request.form.get('pr_Last_name')
         op_First_name = request.form.get('op_First_name')
         op_Last_name = request.form.get('op_Last_name')
+        operator_id = request.form.get('operator_id')
         admin_id = 911900
         cur.execute("SELECT MAX(school_id) FROM school")
         id = str(cur.fetchall()[0][0]+1)
@@ -312,7 +311,7 @@ def admin_requests():
         with open(file_path, 'r') as file:
             data = json.load(file)
         
-        print
+       
         cur = db.connection.cursor()
         query = f"""
         SELECT * FROM users u  inner join email_table e on e.user_id =u.user_id inner join phone_table p on p.user_id = e.user_id  WHERE approved = FALSE AND user_type='operator'
@@ -326,7 +325,7 @@ def admin_requests():
         for i, dictionary in enumerate(info_op):
             if i < len(data):
                 dictionary.update(data[i])
-        print(info_op)
+        
         return render_template("admin_requests.html", info_op=info_op)
 
 @app.route('/accept_request', methods=['GET','POST'])
@@ -356,7 +355,7 @@ def accept_request():
         cur.execute(query)
         db.connection.commit()
         
-        flash("operator accepted !",category="success")
+        flash("operator accepted please add school of operator!",category="success")
         cur.close()
     return redirect('/admin/requests')
 
@@ -439,29 +438,47 @@ def operator_book_add():
         record = cur.fetchone() 
         cur.execute('SELECT school_id FROM school WHERE operator_id = %s ',(operator_id,))
         school_id =  cur.fetchone()
-        school_id =[row for row in school_id][0]
+        school_id = school_id[0]
         image = request.form.get('image')
-        author = request.form.get('author')
-        category = request.form.get('category')
+       
         if record:
             flash("Book already exists!",category= 'error')
-        else:     
-            
+        else:
             query = f"""
             INSERT INTO books (ISBN, school_id,operator_id,title,publisher,num_of_pages,summary,avail_copies,language,image,keywords) VALUES ("{isbn}",{school_id},"{operator_id}","{title}","{publisher}",{num_of_pages},'{summary}',{avail_copies},'{language}','{image}','{keywords}')
             """
+            cur.execute(query)
+            data_1 = request.form.get('author')
+            author = f"author = '{data_1}'  " if (data_1 != "") else ""
+
+            data_2 = request.form.get('category')
+            category = f"category = '{data_2}'  " if (data_2 != "") else ""
+
+            auth = data_1
+
+          
+            auth=  data_1.split(',')
+    
+            for i in auth:
+                
+                my_query = (
+                f"INSERT INTO author_table (ISBN, author) VALUES ('{isbn}','{i}')"
+            )
+                cur.execute(my_query)
+                db.connection.commit()
+            cat = data_2
+
+        
+            cat=  data_2.split(',')
+        
+            for i in cat:
+                
+                my_query = (
+                f"INSERT INTO category_table (ISBN, category) VALUES ('{isbn}','{i}')"
+            )
+                cur.execute(my_query)
+                db.connection.commit()
             
-            cur.execute(query)
-            query = f"""
-            INSERT INTO author_table (ISBN, author) VALUES ("{isbn}","{author}")
-            """
-            cur.execute(query)
-            query = f"""
-            INSERT INTO category_table (ISBN, category) VALUES ("{isbn}","{category}")
-            """
-            cur.execute(query)
-            db.connection.commit()
-            cur.close()
             
             flash("Book added successfully", category="success")
             return  redirect('/operator/books')
@@ -520,7 +537,7 @@ def operator_book_change():
         data_2 = request.form.get('category')
         category = f"category = '{data_2}'  " if (data_2 != "") else ""
 
-        print(keywords)
+        
         additionalQuery = [
             isbn,
             title,
@@ -578,10 +595,27 @@ def operator_book_change():
 
 @app.route('/backup', methods=['GET','POST'])
 def backup():
-    # Run mysqldump command to create backup file
-    if(request.method == "POST"):
-        subprocess.run(['mysqldump', '-u', 'root', '-p1532001', 'library', '>', 'backup_file.sql'])
-        flash('Backup Successful',category="success")
+    cursor = db.connection.cursor()
+    d_b = 'library'
+       
+        # Getting all the table names
+    cursor.execute('SHOW TABLES;')
+    table_names = []
+    for record in cursor.fetchall():
+        table_names.append(record[0])
+    
+    backup_dbname = 'library' + '_backup'
+    try:
+        cursor.execute(f'CREATE DATABASE {backup_dbname}')
+    except:
+        pass
+    
+    cursor.execute(f'USE {backup_dbname}')
+    print('ok')
+    for table_name in table_names:
+        cursor.execute(
+            f'CREATE TABLE {table_name} SELECT * FROM {d_b}.{table_name}')
+    flash('backup of database created',category='success')
     return redirect('/admin')
 
 
@@ -589,14 +623,34 @@ def backup():
 
 @app.route('/restore', methods=['GET','POST'])
 def restore():
-    if(request.method == "POST"):
-        backup_file = request.files['backup_file']
-        # Save the uploaded backup file to a secure location
-        backup_file.save(r"C:\Users\DELL\Desktop\ΕΞΑΜΗΝΙΑΙΑ_ΒΑΣΕΙΣ_2023\backup_file.sql")
+    cursor = db.connection.cursor()
+  
+    d_b = 'library'
+    backup_dbname = d_b + '_backup'
+    try:
+        # Drop the existing database
+        cursor.execute(f"DROP DATABASE IF EXISTS {d_b}")
+        # Create a new empty database
+        cursor.execute(f"CREATE DATABASE {d_b}")
+        # Switch to the new database
+        cursor.execute(f"USE {d_b}")
 
-        # Run mysql command to restore the database
-        subprocess.run(['mysql', '-u', 'root', '-p1532001', 'library', '<', r"C:\Users\DELL\Desktop\ΕΞΑΜΗΝΙΑΙΑ_ΒΑΣΕΙΣ_2023\backup_file.sql"])
-        flash('Restore Successful',category="success")
+        # Get the table names from the backup database
+        cursor.execute(f"SHOW TABLES IN {backup_dbname}")
+        table_names = [record[0] for record in cursor.fetchall()]
+
+        # Restore each table from the backup to the new database
+        for table_name in table_names:
+            cursor.execute(f"CREATE TABLE {table_name} SELECT * FROM {backup_dbname}.{table_name}")
+
+        flash('Restore Successful', category='success')
+    except Exception as e:
+        flash('Restore Failed', category='error')
+        print(e)
+    finally:
+        cursor.close()
+        
+    flash('Restore Successful',category="success")
     return redirect('/admin')
 
 @app.route("/school_users",methods=['GET','POST'])
@@ -1484,3 +1538,75 @@ def delete_sch_usrr():
         
    
     return redirect('/vew_memb')
+
+
+@app.route('/borrowing/add/man', methods=['GET','POST'])
+def borrowingaddman():
+    if(request.method == "POST"):
+         isbn =request.form['isbn']
+         session['isbn_man'] = isbn
+         print(isbn)
+    
+    return render_template("add_bo_manualy.html")
+@app.route('/borrowing/add/manually', methods=['GET','POST'])
+def borrowingaddmanually():
+    cur = db.connection.cursor()
+    if(request.method == "POST"):
+        
+        isbn =session.get('isbn_man')
+        print(isbn)
+        id =  request.form['id']
+        bor_day = date.today()
+        cur.execute("SELECT MAX(borrowed_id) as user FROM borrowings")
+        borrowed_id= cur.fetchone()
+        print(isbn)
+        borrowed_id =borrowed_id[0]
+        borrowed_id =  borrowed_id + 1
+
+        # Perform database operations
+        query = f"""
+        INSERT INTO borrowings (ISBN,operator_id,borrowed_id,school_users_id,borrowing_date,due_date,return_date) VALUES ('{isbn}',{session.get('user_id')},{borrowed_id},{id},'{bor_day}',NULL,NULL);
+        """
+        cur.execute(query)
+        db.connection.commit()
+        
+        flash('borrowing submited',category='success')
+    return render_template("add_bo_manualy.html")
+
+@app.route('/delete_book', methods=['GET','POST'])
+def delete_book():
+    # Get the request details from the form data
+    cur = db.connection.cursor()
+    if(request.method == "POST"):
+        ISBN = request.form['isbn']
+        try:
+            # Perform database operations
+            query = f"""
+                        DELETE FROM category_table where isbn = '{ISBN}'
+                        """
+            cur.execute(query)
+          
+            query = f"""
+                        DELETE FROM author_table where isbn = '{ISBN}'
+                        """
+            cur.execute(query)
+            query = f"""
+                        DELETE FROM borrowings where isbn = '{ISBN}'
+                        """
+            cur.execute(query)
+            query = f"""
+                        DELETE FROM books where isbn = '{ISBN}'
+                        """
+            cur.execute(query)
+            
+            db.connection.commit()
+            cur.close()
+            
+            flash('book deleted',category='success')
+            
+        except Exception as e:
+            error_message = str(e)
+            return render_template('error.html', error_message=error_message)
+          
+    return redirect('/operator/books')
+        
