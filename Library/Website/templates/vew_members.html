@@ -15,7 +15,9 @@
                             <th>Last_name</th>                       
                             <th>school</th>
                             <th>Status</th>
-                            <th>delete</th>                     
+                            <th>delete</th>   
+                             <th>Manage User</th>
+                            <th></th>                  
                             <th></th>                         
                         </tr>
                     </thead>
@@ -26,8 +28,10 @@
                             <td> {{ info.First_name }} </td>
                             <td> {{ info.Last_name }} </td>                           
                            <td> {{ info.name }} </td>   
-                           <td> {{ info.status }} </td>                            
+                           <td> {{ info.status }} </td>     
+                                               
                     <td>
+                      
                         <form action="/delete_sch_user" method="POST">
                             <input type="hidden" name="first_name" value="{{ info.FirstName }}">
                             <input type="hidden" name="last_name" value="{{ info.LastName }}">
@@ -39,8 +43,45 @@
                                <button style="border:0"> <i class="fa-solid fa-user-slash" style="color: #e40c0c;"></i></button>                       
                             </form>
                             </td>
+                            <td>
+                                {% if info.approved == False %}
+                                <form action="/activate_sch_user" method="POST">
+                                    <input type="hidden" name="first_name" value="{{ info.FirstName }}">
+                                    <input type="hidden" name="last_name" value="{{ info.LastName }}">
+                                    <input type="hidden" name="email" value="{{ info.email }}">
+                                    <input type="hidden" name="phone" value="{{ info.phone_number }}">
+                                    <input type="hidden" name="user_id" value="{{ info.user_id}}">
+                                    <input type="hidden" name="school" value="{{  info.name }}">  
+                                    <input type="hidden" name="age" value="{{ info.age }}">    
+                                    <button id="disableButton" style="border: 0;">
+                                       
+                                        <i class="fa-solid fa-toggle-off" style="color: #e60505;"></i>
+                                        
+                                        
+                                    </button>
+                                  
+                                </form>
+                                {% else %}
+                                <form action="/desable_sch_user" method="POST">
+                                    <input type="hidden" name="first_name" value="{{ info.FirstName }}">
+                                    <input type="hidden" name="last_name" value="{{ info.LastName }}">
+                                    <input type="hidden" name="email" value="{{ info.email }}">
+                                    <input type="hidden" name="phone" value="{{ info.phone_number }}">
+                                    <input type="hidden" name="user_id" value="{{ info.user_id}}">
+                                    <input type="hidden" name="school" value="{{  info.name }}">  
+                                    <input type="hidden" name="age" value="{{ info.age }}">    
+                                    <button id="disableButton" style="border: 0;">
+                                     
+                                        <i class="fa-solid fa-toggle-on" style="color: #1fc913;"></i>
+                                       
+                                    </button>
+                                </form>
+                              
+                            </td>
+                            
+                        
                         </tr>
-                     
+                        {% endif %}
                         {%endfor%}
                     </tbody>
                 </table>
@@ -52,5 +93,24 @@
     <p></p>
 </div>
 </div>
-
+<script>
+    // Add event listeners to the disable and activate buttons
+    document.getElementById("disableButton").addEventListener("click", function(e) {
+      e.preventDefault(); // Prevent form submission
+      var icon = this.querySelector("i");
+      var form = this.parentElement;
+      if (icon.classList.contains("fa-toggle-on")) {
+        icon.classList.remove("fa-toggle-on");
+        icon.classList.add("fa-toggle-off");
+        icon.style.color = "#e60505";
+        form.action = "/desable_sch_user"; // Update the form action
+      } else {
+        icon.classList.remove("fa-toggle-off");
+        icon.classList.add("fa-toggle-on");
+        icon.style.color = "#1fc913";
+        form.action = "/activate_sch_user"; // Update the form action
+      }
+      form.submit(); // Submit the form
+    });
+  </script>
 {% endblock %}

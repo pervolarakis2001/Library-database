@@ -1498,10 +1498,10 @@ def  vew_operator():
         cur.execute(query)
         column_names = [i[0] for i in cur.description]
         info_op = [dict(zip(column_names, entry)) for entry in cur.fetchall()]
-       
+      
         cur.close()
        
-        return render_template("vew_members.html", info_op=info_op)
+        return render_template("vew_members.html",info_op=info_op)
 
 @app.route('/delete_sch_user', methods=['GET','POST'])
 def delete_sch_usrr():
@@ -1545,7 +1545,7 @@ def borrowingaddman():
     if(request.method == "POST"):
          isbn =request.form['isbn']
          session['isbn_man'] = isbn
-         print(isbn)
+       
     
     return render_template("add_bo_manualy.html")
 @app.route('/borrowing/add/manually', methods=['GET','POST'])
@@ -1610,3 +1610,33 @@ def delete_book():
           
     return redirect('/operator/books')
         
+@app.route('/activate_sch_user', methods=['GET','POST'])
+def activate_user():
+    cur = db.connection.cursor()
+    if(request.method == "POST"):
+         user_id = request.form.get('user_id')
+         query = f"""
+                 update users set approved = TRUE where user_id = {user_id}
+                """
+         cur.execute(query)
+            
+         db.connection.commit()
+         flash('user activates',category='success')
+         cur.close()
+    return redirect('/vew_memb')
+
+@app.route('/desable_sch_user', methods=['GET','POST'])
+def desable_user():
+   
+    cur = db.connection.cursor()
+    if(request.method == "POST"):
+         user_id = request.form.get('user_id')
+         query = f"""
+                 update users set approved = FALSE where user_id = {user_id}
+                """
+         cur.execute(query)
+            
+         db.connection.commit()
+         flash('user desabled',category='error')
+         
+    return redirect('/vew_memb')
