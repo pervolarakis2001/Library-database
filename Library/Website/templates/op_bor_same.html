@@ -14,6 +14,7 @@
                     <table class="table table-striped table-sm table-borderless">
                         <thead>
                             <tr>
+                                <th>ID </th>
                                 <th>First_name </th>
                                 <th>Last_name </th>
                                 <th>number of books </th>
@@ -23,6 +24,7 @@
                            
                             {% for sch in reserve %}
                             <tr>
+                                <td> {{ sch.operator_id}} </td>  
                                 <td> {{ sch.First_name}} </td>  
                                 <td> {{ sch.Last_name}} </td>    
                                 <td> {{ sch.count}} </td>          

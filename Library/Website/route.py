@@ -391,6 +391,21 @@ def deny_request():
        
         db.connection.commit()
         cur.close()
+        
+        condition = {'school':f"{school}", 'status': "empty"}
+        
+        # Open the JSON file in read mode
+        with open(file_path, 'r') as file:
+            # Load the existing data from the JSON file
+            existing_data = json.load(file)
+
+            # Filter the data based on the condition and remove the matching entry
+            existing_data = [data for data in existing_data if data != condition]
+      
+        # Open the same JSON file in write mode
+        with open(file_path, 'w') as file:
+            # Write the updated data (after deletion) to the JSON file
+            json.dump(existing_data, file)
         flash("operator denied",category="success")
         
    
@@ -424,64 +439,68 @@ def operator_book_add():
 
 
     if(request.method == "POST"):
-
-        operator_id = session.get("user_id")          
-        isbn = request.form.get('isbn')
-        title = request.form.get('title')
-        publisher = request.form.get('publisher')
-        num_of_pages = request.form.get('num_of_pages')
-        summary = request.form.get('summary')
-        avail_copies = request.form.get('avail_copies')
-        language = request.form.get('language')
-        keywords = request.form.get('keywords')
-        cur.execute('SELECT ISBN FROM books WHERE ISBN = %s ',(isbn,))
-        record = cur.fetchone() 
-        cur.execute('SELECT school_id FROM school WHERE operator_id = %s ',(operator_id,))
-        school_id =  cur.fetchone()
-        school_id = school_id[0]
-        image = request.form.get('image')
-       
-        if record:
-            flash("Book already exists!",category= 'error')
-        else:
-            query = f"""
-            INSERT INTO books (ISBN, school_id,operator_id,title,publisher,num_of_pages,summary,avail_copies,language,image,keywords) VALUES ("{isbn}",{school_id},"{operator_id}","{title}","{publisher}",{num_of_pages},'{summary}',{avail_copies},'{language}','{image}','{keywords}')
-            """
-            cur.execute(query)
-            data_1 = request.form.get('author')
-            author = f"author = '{data_1}'  " if (data_1 != "") else ""
-
-            data_2 = request.form.get('category')
-            category = f"category = '{data_2}'  " if (data_2 != "") else ""
-
-            auth = data_1
-
-          
-            auth=  data_1.split(',')
-    
-            for i in auth:
-                
-                my_query = (
-                f"INSERT INTO author_table (ISBN, author) VALUES ('{isbn}','{i}')"
-            )
-                cur.execute(my_query)
-                db.connection.commit()
-            cat = data_2
-
+        try:
+            operator_id = session.get("user_id")          
+            isbn = request.form.get('isbn')
+            title = request.form.get('title')
+            publisher = request.form.get('publisher')
+            num_of_pages = request.form.get('num_of_pages')
+            summary = request.form.get('summary')
+            avail_copies = request.form.get('avail_copies')
+            language = request.form.get('language')
+            keywords = request.form.get('keywords')
+            cur.execute('SELECT ISBN FROM books WHERE ISBN = %s ',(isbn,))
+            record = cur.fetchone() 
+            cur.execute('SELECT school_id FROM school WHERE operator_id = %s ',(operator_id,))
+            school_id =  cur.fetchone()
+            school_id = school_id[0]
+            image = request.form.get('image')
         
-            cat=  data_2.split(',')
-        
-            for i in cat:
+            if record:
+                flash("Book already exists!",category= 'error')
+            else:
+            
+                    query = f"""
+                    INSERT INTO books (ISBN, school_id,operator_id,title,publisher,num_of_pages,summary,avail_copies,language,image,keywords) VALUES ("{isbn}",{school_id},"{operator_id}","{title}","{publisher}",{num_of_pages},'{summary}',{avail_copies},'{language}','{image}','{keywords}')
+                    """
+                    cur.execute(query)
+                    data_1 = request.form.get('author')
+                    author = f"author = '{data_1}'  " if (data_1 != "") else ""
+
+                    data_2 = request.form.get('category')
+                    category = f"category = '{data_2}'  " if (data_2 != "") else ""
+
+                    auth = data_1
+
+                    
+                    auth=  data_1.split(',')
+
+                    for i in auth:
+                        
+                        my_query = (
+                        f"INSERT INTO author_table (ISBN, author) VALUES ('{isbn}','{i}')"
+                    )
+                        cur.execute(my_query)
+                        db.connection.commit()
+                    cat = data_2
+
                 
-                my_query = (
-                f"INSERT INTO category_table (ISBN, category) VALUES ('{isbn}','{i}')"
-            )
-                cur.execute(my_query)
-                db.connection.commit()
-            
-            
-            flash("Book added successfully", category="success")
-            return  redirect('/operator/books')
+                    cat=  data_2.split(',')
+                
+                    for i in cat:
+                        
+                        my_query = (
+                        f"INSERT INTO category_table (ISBN, category) VALUES ('{isbn}','{i}')"
+                    )
+                        cur.execute(my_query)
+                        db.connection.commit()
+                    
+                    
+                    flash("Book added successfully", category="success")
+                    return  redirect('/operator/books')
+        except Exception as e:
+            error_message = str(e)
+        return render_template('error.html', error_message=error_message)
             
     return render_template("book_add.html")
 
@@ -503,10 +522,10 @@ def operator_book_change():
     
     if(request.method == "POST"):
         operator_id = session.get("user_id")
-        print(operator_id)
+        
             
-        data = request.form.get('isbn') 
-        isbn = f"ISBN = '{data}'" if (data != "") else ""
+        data_3 = request.form.get('isbn') 
+        isbn = f"ISBN = '{data_3}'" if (data_3 != "") else ""
 
         data = request.form.get('title')
         title = f"title = '{data}'" if (data != "") else ""
@@ -552,7 +571,7 @@ def operator_book_change():
 
         additionalQuery = ",".join(list(filter(lambda i: i != "", additionalQuery)))
         auth = data_1
-
+        
         if auth != "":
             auth=  data_1.split(',')
        
@@ -575,47 +594,70 @@ def operator_book_change():
                 my_query = (
                 f"update category_table set "
                 +  f"category= '{i}' "
-                + f" where ISBN = '{session.get('isbn_1')}' and category= '{session.get('category')}' "
+                + f" where ISBN = '{session.get('isbn_1')}'  and category= '{session.get('category')}' "
             )
                 cur.execute(my_query)
                 db.connection.commit()
+            
         
         if  additionalQuery != "":
             my_query = (
                 f"update books set "
-                + additionalQuery
+                + additionalQuery 
                 + f" where ISBN = '{session.get('isbn_1')}' and operator_id={operator_id};"
             )
             cur.execute(my_query)
             db.connection.commit()
-            cur.close()
+           
+
+        if data_3 !="":
+               my_query = (
+                f"update author_table set "
+                +  f"isbn= '{data_3}' "
+                + f" where ISBN = '{session.get('isbn_1')}' "
+            )
+               cur.execute(my_query)
+               db.connection.commit()
+
+               my_query = (
+                f"update category_table set"
+                +  f" ISBN = '{data_3}' "
+                + f" where ISBN = '{session.get('isbn_1')}' "
+            )
+               cur.execute(my_query)
+               db.connection.commit()
+               cur.close()
         flash("book changes saved!",category='success')
         return redirect('/operator/books')
     return render_template("change_book.html")
 
 @app.route('/backup', methods=['GET','POST'])
 def backup():
-    cursor = db.connection.cursor()
-    d_b = 'library'
-       
-        # Getting all the table names
-    cursor.execute('SHOW TABLES;')
-    table_names = []
-    for record in cursor.fetchall():
-        table_names.append(record[0])
-    
-    backup_dbname = 'library' + '_backup'
     try:
-        cursor.execute(f'CREATE DATABASE {backup_dbname}')
-    except:
-        pass
-    
-    cursor.execute(f'USE {backup_dbname}')
-    print('ok')
-    for table_name in table_names:
-        cursor.execute(
-            f'CREATE TABLE {table_name} SELECT * FROM {d_b}.{table_name}')
-    flash('backup of database created',category='success')
+        cursor = db.connection.cursor()
+        d_b = 'library'
+        
+            # Getting all the table names
+        cursor.execute('SHOW TABLES;')
+        table_names = []
+        for record in cursor.fetchall():
+            table_names.append(record[0])
+        
+        backup_dbname = 'library' + '_backup'
+        try:
+            cursor.execute(f'CREATE DATABASE {backup_dbname}')
+        except:
+            pass
+        
+        cursor.execute(f'USE {backup_dbname}')
+        print('ok')
+        for table_name in table_names:
+            cursor.execute(
+                f'CREATE TABLE {table_name} SELECT * FROM {d_b}.{table_name}')
+        flash('backup of database created',category='success')
+    except Exception as e:
+            error_message = str(e)
+            return render_template('error.html', error_message=error_message)
     return redirect('/admin')
 
 
@@ -660,7 +702,7 @@ def school_users():
 @app.route("/sch_user_profile",methods=['GET','POST'])
 def sch_user_profile():
       
-        usernmae = session.get("username")
+        username = session.get("username")
         First_name = session.get("First_name")
         Last_name = session.get("Last_name")
         email = session.get('email')
@@ -678,42 +720,66 @@ def edit_profile():
      
       cur = db.connection.cursor()
       if(request.method == "POST"):
+        
         school_users_id = session.get("user_id")
         username = request.form.get('username')      
         data = request.form.get('username') 
         username= f"username = '{data}'" if (data != "") else ""
-
+          
         data = request.form.get('First_name')
         First_name = f"First_name = '{data}'" if (data != "") else ""
-
+      
+             
         data = request.form.get('Last_name')
         Last_name = f"Last_name = '{data}'" if (data != "") else ""
+       
         
-        data = request.form.get('email')
-        email = f"email = {data}" if (data != "") else "" 
+        data_2 = request.form.get('email')
+        email = f"email = {data_2}" if (data_2 != "") else "" 
         
-        data = request.form.get('school')
-        school = f"school = '{data}'" if (data != "") else ""
-
         data =  request.form.get('password')
         password = f"password = {data}" if (data != "") else ""
         
-        data =  request.form.get('phone')
-        phone = f"phone = {data}" if (data != "") else ""
+        data_1=  request.form.get('phone')
+        phone = f"phone = {data_1}" if (data_1 != "") else ""
+        
 
         
         additionalQuery = [
            username,
            First_name,
             Last_name,
-            email ,
-            school,
             password,
-            phone
         ]
 
         additionalQuery = ",".join(list(filter(lambda i: i != "", additionalQuery)))
         print(additionalQuery)
+        ph=data_1
+        if ph != "":
+            ph=  data_1.split(',')
+        
+            for i in ph:
+                
+                my_query = (
+                f"update phone_table set "
+                +  f"phone_number= '{i}' "
+                + f" where user_id = {school_users_id} and phone_number='{session.get('phone')}' "
+            )
+                cur.execute(my_query)
+                db.connection.commit()
+        em= data_2
+        if em != "":
+            em=  data_2.split(',')
+        
+            for i in em:
+                
+                my_query = (
+                f"update  email_table set "
+                +  f"email= '{i}' "
+                + f" where user_id= {school_users_id} and email='{session.get('email')}' "
+            )
+                cur.execute(my_query)
+                db.connection.commit()
        
         if  additionalQuery != "":
             my_query = (
@@ -725,7 +791,17 @@ def edit_profile():
             db.connection.commit()
             cur.close()
         flash("user proflie changes saved!",category='success')
-      return render_template("edit_prof.html")
+        if username!="":
+                session['username']= request.form.get('username')  
+        if First_name != "" :
+             session['First_name']= request.form.get('First_name')
+        if Last_name !="":
+            session['Last_name']= request.form.get('Last_name')
+        if email !="":
+            session['email']= request.form.get('email')
+        if phone !="":
+             session['phone']= request.form.get('phone')
+      return redirect('/sch_user_profile')
       
       
 @app.route("/change_profile",methods=['GET','POST'])
@@ -1280,21 +1356,21 @@ def auth_no_bor():
 def  op_bor_same():
          cur = db.connection.cursor()
          query = f"""
-                   select op.operator_id, us.First_name, us.Last_name,count(bor.borrowed_id) as count from users us
+                   select bor.operator_id, us.First_name, us.Last_name,count(bor.borrowed_id) as count from users us
                     inner join operator op on op.operator_id = us.user_id
                     inner join borrowings bor on bor.operator_id = op.operator_id  
                     inner join operator op1 on op1.operator_id = op.operator_id WHERE YEAR(bor.borrowing_date) IN (
                         SELECT DISTINCT YEAR(borrowing_date)
                         FROM borrowings
                     )
-                    group by bor.operator_id 
-                    having count(bor.borrowed_id) > 20 ;  
+                    group by  bor.operator_id, us.First_name, us.Last_name
+                    having count(bor.borrowed_id) > 20 ; 
                     """
          cur.execute(query)
     
          column_names = [i[0] for i in cur.description]
          reserve = [dict(zip(column_names, entry)) for entry in cur.fetchall()]
-         return render_template('auth_no_bor.html',reserve=reserve)
+         return render_template('op_bor_same.html',reserve=reserve)
 
 
 @app.route("/top_categories",methods=['GET','POST'])
@@ -1342,7 +1418,7 @@ def  operator_requests():
         with open(file_path_2, 'r') as file:
             data = json.load(file)
         
-       
+        print(data)
         cur = db.connection.cursor()
         query = f"""
         SELECT * FROM users u  inner join email_table e on e.user_id =u.user_id inner join phone_table p on p.user_id = e.user_id  WHERE approved = FALSE AND user_type='school_users'
@@ -1356,6 +1432,7 @@ def  operator_requests():
         for i, dictionary in enumerate(info_op):
             if i < len(data):
                 dictionary.update(data[i])
+        print(info_op)
         flash('Thanks for signing up wait for your operator to give permission')
         return render_template("oper_requests.html", info_op=info_op)
 @app.route('/accept_request_op', methods=['GET','POST'])
@@ -1404,6 +1481,8 @@ def deny_request_op():
         first_name = request.form['first_name']
         last_name = request.form['last_name']
         email = request.form['email']
+        status = request.form['status']
+        age = request.form['age']
        
         school = request.form['school']
         phone = request.form['phone']
@@ -1424,19 +1503,31 @@ def deny_request_op():
               delete FROM  users  WHERE user_id ={user_id};
             """
         cur.execute(query)
-       
+        
         db.connection.commit()
         cur.close()
-        flash("operator denied",category="success")
+       
+        condition = {"school": f"{school}", "status": f"{status}", "age": f"{age}"}
         
-   
+        # Open the JSON file in read mode
+        with open(file_path_2, 'r') as file:
+            # Load the existing data from the JSON file
+            existing_data = json.load(file)
+
+            # Filter the data based on the condition and remove the matching entry
+            existing_data = [data for data in existing_data if data != condition]
+      
+        # Open the same JSON file in write mode
+        with open(file_path_2, 'w') as file:
+            # Write the updated data (after deletion) to the JSON file
+            json.dump(existing_data, file)
+        flash("operator denied",category="success")
     return redirect('/operator/requests')
 
 
 @app.route("/vew_op",methods=['GET','POST'])
 def  vewoperator():
         
-       
         cur = db.connection.cursor()
         query = f"""
         SELECT * FROM operator op inner join users u on u.user_id = op.operator_id inner join school sc on op.operator_id = sc.operator_id
@@ -1536,7 +1627,7 @@ def delete_sch_usrr():
         cur.close()
         flash("user deleted",category="success")
         
-   
+        
     return redirect('/vew_memb')
 
 
@@ -1554,7 +1645,7 @@ def borrowingaddmanually():
     if(request.method == "POST"):
         
         isbn =session.get('isbn_man')
-        print(isbn)
+        
         id =  request.form['id']
         bor_day = date.today()
         cur.execute("SELECT MAX(borrowed_id) as user FROM borrowings")
