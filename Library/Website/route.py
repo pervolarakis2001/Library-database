@@ -13,59 +13,44 @@ import os
 def index():
     return render_template("landing.html", pageTitle="Landing Page")
 
-file_path = r'C:\Users\DELL\Desktop\Library\Website\retrieve.json'
-file_path_2 = r'C:\Users\DELL\Desktop\Library\Website\status.json'
+
 school_op = []  # dictionary to keep values of sign up forms
-@app.route("/sign-up",methods=['GET','POST'])
-def sign_up():
-    if request.method =='POST':
+
+@app.route("/sign-up-choice",methods=['GET','POST'])
+def sign_up_choice():
+     return render_template('sign_up_choice.html')
+
+@app.route("/sign-up_op",methods=['GET','POST'])
+def sign_up_op():
+      if request.method =='POST':
       
-        FirstName= request.form.get('FirstName')
-        LastName = request.form.get('LastName')
-        email = request.form.get('email')
-        phone = request.form.get('phone')
-        username = request.form.get('username')
-        password = request.form.get('password')
-        School = request.form.get('School')
-        age = request.form.get('age')
-        user_type = request.form.get('user_type')
-        status= "empty"
-       
-        if user_type==  "School_user":
-            status = request.form.get('status')
-        
-        
-    
-        # Data Constraints 
-       
-        ######## if users data is null then flash("error")
-        if len(FirstName) > 20 :
-            flash("Fist Name must be less than 20 characters", category='error')
-        elif len(LastName) > 20 :
-            flash("Last Name must be less than 20 characters", category='error')
-        elif len(email)<2 or len(email)> 60  :
-            flash("Email must be greater that 2 and less than 50 characters", category= 'error')
-        elif len(username) > 40 :
-            flash("username must be less than 40 characters", category= 'error')
-        elif len(password) > 15: 
-            flash("password must be less than 15 characters", category= 'error')
-        else: 
-            #add user to database 
-            if user_type == "operator":
-                    with open(file_path, 'r') as file:
-                # Load the existing data from the JSON file
-                        existing_data = json.load(file)
-   
-                        new_data = {'school':School, 'status': status}
+            FirstName= request.form.get('FirstName')
+            LastName = request.form.get('LastName')
+            email = request.form.get('email')
+            phone = request.form.get('phone')
+            username = request.form.get('username')
+            password = request.form.get('password')
+            School = request.form.get('School')
+            age = request.form.get('age')
+            user_type = "operator"
+            postcode = request.form.get('postcode')
+            city = request.form.get('city')
+            email_school = request.form.get('email_school')
+            pr_First_name = request.form.get('pr_First_name')
+            pr_Last_name = request.form.get('pr_Last_name')
+            
 
-                        # Append the new data to the existing data
-                        existing_data.append(new_data)
-
-        
-                    with open(file_path, 'w') as file:
-                        # Write the updated data to the JSON file
-                        json.dump(existing_data, file)
-   
+            if len(FirstName) > 20 :
+                flash("Fist Name must be less than 20 characters", category='error')
+            elif len(LastName) > 20 :
+                flash("Last Name must be less than 20 characters", category='error')
+            elif len(email)<2 or len(email)> 60  :
+                flash("Email must be greater that 2 and less than 50 characters", category= 'error')
+            elif len(username) > 40 :
+                flash("username must be less than 40 characters", category= 'error')
+            elif len(password) > 15: 
+                flash("password must be less than 15 characters", category= 'error')
+            else: 
                     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
                     
                     query = f"""
@@ -84,7 +69,12 @@ def sign_up():
                         
                         user_id = user_id['user']
                         user_id =  user_id + 1
-                       
+                        cur.execute("SELECT MAX(school_id) as school FROM school")
+                        school_id = cur.fetchone()
+                        
+                        school_id = school_id['school']
+                        school_id=  school_id + 1
+
                         query = f"""
                         INSERT INTO users (user_id,First_name,Last_name,user_type,username,password,approved) VALUES ({user_id},'{FirstName}', '{LastName}','{user_type}','{username}','{password}',FALSE);
 
@@ -94,82 +84,103 @@ def sign_up():
                             INSERT INTO email_table (email,user_id) VALUES ('{email}',{user_id});
                         """
                         cur.execute(query) 
+
+                        query = f"""
+                           INSERT INTO operator (operator_id,admin_id,user_type) VALUES ({user_id},9119000,"operator");
+
+                        """
+                        cur.execute(query) 
+
                         query = f"""
                             INSERT INTO phone_table (phone_number,user_id) VALUES ('{phone}',{user_id});
                         """
                         
                         cur.execute(query) 
+                        query = f"""
+                            INSERT INTO school (school_id,admin_id,name,postcode,city,email,pr_First_name,pr_Last_name,operator_id) VALUES ('{school_id}',9119000,'{School}','{postcode}','{city}','{email_school}','{pr_First_name}','{pr_Last_name}',{user_id});
+
+                        """
+                        cur.execute(query) 
                         db.connection.commit()
-                        flash('application form sent, please wait administrator to give permission for access',category='success')
+                        flash('application form sent, please wait administrator to give permission',category='success')
                     cur.close()    
+            
+       
+      return render_template('sign_up_op.html')
 
-            elif  user_type == "School_user":
-                    cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
-                    #add user to database 
-
+@app.route("/sign-up_user",methods=['GET','POST'])
+def sign_up_user():
+     if request.method =='POST':
+      
+        FirstName= request.form.get('FirstName')
+        LastName = request.form.get('LastName')
+        email = request.form.get('email')
+        phone = request.form.get('phone')
+        username = request.form.get('username')
+        password = request.form.get('password')
+        School = request.form.get('School')
+        age = request.form.get('age')
+        user_type = request.form.get('user_type')
+        status= request.form.get('status')
+        cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
                     
-                    # Check if the JSON file exists
-                    if os.path.isfile(file_path_2) and os.path.getsize(file_path) > 0:
-
-                        # File exists and is not empty
-                        with open(file_path_2, 'r') as file:
-                            # Load the existing data from the JSON file
-                              try:
-                                    # Load the existing data from the JSON file
-                                    existing_data = json.load(file)
-                              except json.decoder.JSONDecodeError:
-            # Handle empty or invalid JSON file
-                                    existing_data = []
-                          
-                    else:
-                        # File is empty or does not exist
-                        existing_data = []
-
-                    new_data = {'school': School, 'status': status,'age':age}
-
-                    # Append the new data to the existing data
-                    existing_data.append(new_data)
-
-                    with open(file_path_2, 'w') as file:
-                        # Write the updated data to the JSON file
-                        json.dump(existing_data, file)
+        
    
-                    query = f"""
-                    SELECT u.username,u.password  from users u inner join operator op on u.user_id=op.operator_id 
-                    WHERE username='{username}'
-                    and password='{password} AND approved=TRUE'
-                    """
-                    cur.execute(query)                 
-                    record_1 = cur.fetchone() 
-                    
-                    if record_1:
-                        flash('operator allready exists',category='error')
-                    else:
-                        cur.execute("SELECT MAX(user_id) as user FROM users")
-                        user_id = cur.fetchone()
-                        
-                        user_id = user_id['user']
-                        user_id =  user_id + 1
-                        
-                        session['status_signup']= status
-                        query = f"""
-                            INSERT INTO users (user_id,First_name,Last_name,user_type,username,password,approved) VALUES ({user_id},'{FirstName}','{LastName}','school_users','{username}','{password}',FALSE);
-                        """
-                        cur.execute(query) 
-                         
-                        query = f"""
-                            INSERT INTO email_table (email,user_id) VALUES ('{email}',{user_id});
-                        """
-                        cur.execute(query) 
-                        query = f"""
-                            INSERT INTO phone_table (phone_number,user_id) VALUES ('{phone}',{user_id});
-                        """
-                        
-                        cur.execute(query)  
-                        db.connection.commit()
-                        flash('application form sent, please wait administrator to give permission for access',category='success')
-                    cur.close()  
-    return render_template("sign_up.html")
+        query = f"""
+        SELECT u.username,u.password  from users u inner join operator op on u.user_id=op.operator_id 
+        WHERE username='{username}'
+        and password='{password} AND approved=TRUE'
+        """
+        cur.execute(query)                 
+        record_1 = cur.fetchone() 
+        
+        if record_1:
+            flash('operator allready exists',category='error')
+        else:
+            cur.execute("SELECT MAX(user_id) as user FROM users")
+            user_id = cur.fetchone()
+            
+            user_id = user_id['user']
+            user_id =  user_id + 1
+            
+            query = f"""
+                SELECT school_id AS name FROM school WHERE name='{School}'
+            """
+            cur.execute(query) 
+            school_id = cur.fetchone()
+            school_id = school_id['name']
+            query = f"""
+                SELECT operator_id AS name FROM school WHERE name='{School}'
+            """
+            cur.execute(query) 
+            operator_id = cur.fetchone()
+            operator_id = operator_id['name']
+            
+            
+            query = f"""
+                INSERT INTO users (user_id,First_name,Last_name,user_type,username,password,approved) VALUES ({user_id},'{FirstName}','{LastName}','school_users','{username}','{password}',FALSE);
+            """
+            cur.execute(query) 
+            
+            query = f"""
+                INSERT INTO email_table (email,user_id) VALUES ('{email}',{user_id});
+            """
+            cur.execute(query) 
+            query = f"""
+                INSERT INTO phone_table (phone_number,user_id) VALUES ('{phone}',{user_id});
+            """
+            cur.execute(query)  
+            query = f"""
+              INSERT INTO school_users (school_users_id,school_id,operator_id,age,status,user_type) VALUES ({user_id},{school_id},{operator_id},'{age}','{status}',"school_users");
+            """
+            
+            cur.execute(query)  
+            db.connection.commit()
+            flash('application form sent, please wait administrator to give permission for access',category='success')
+        cur.close() 
+     return render_template('sign_up_user.html')
+     
+
 
 @app.route("/login",methods=['GET','POST'])
 def login():
@@ -308,24 +319,20 @@ def admin_schools_add():
 
 @app.route("/admin/requests", methods=['GET','POST'])
 def admin_requests():
-        with open(file_path, 'r') as file:
-            data = json.load(file)
         
        
         cur = db.connection.cursor()
         query = f"""
-        SELECT * FROM users u  inner join email_table e on e.user_id =u.user_id inner join phone_table p on p.user_id = e.user_id  WHERE approved = FALSE AND user_type='operator'
-        """
+	SELECT * FROM users u  inner join email_table e on e.user_id =u.user_id inner join phone_table p on p.user_id = e.user_id inner join school sch on 
+    sch.operator_id = u.user_id WHERE approved = FALSE AND user_type='operator'
+                    """
         cur.execute(query)
         column_names = [i[0] for i in cur.description]
         info_op = [dict(zip(column_names, entry)) for entry in cur.fetchall()]
-        print(info_op)
+       
         cur.close()
        
-        for i, dictionary in enumerate(info_op):
-            if i < len(data):
-                dictionary.update(data[i])
-        
+        print(info_op)
         return render_template("admin_requests.html", info_op=info_op)
 
 @app.route('/accept_request', methods=['GET','POST'])
@@ -349,11 +356,7 @@ def accept_request():
               update users set approved = TRUE WHERE user_id ={user_id}; 
             """
         cur.execute(query)
-        query = f"""
-             INSERT INTO operator (operator_id,admin_id,user_type) VALUES ({user_id},9119000,'operator')
-            """
-        cur.execute(query)
-        db.connection.commit()
+       
         
         flash("operator accepted please add school of operator!",category="success")
         cur.close()
@@ -388,24 +391,21 @@ def deny_request():
               delete FROM  users  WHERE user_id ={user_id};
             """
         cur.execute(query)
+
+        query = f"""
+              delete FROM  operator WHERE operator_id ={user_id};
+            """
+        cur.execute(query)
+
+        query = f"""
+              delete FROM school WHERE operator_id ={user_id};
+            """
+        cur.execute(query)
        
         db.connection.commit()
         cur.close()
         
-        condition = {'school':f"{school}", 'status': "empty"}
-        
-        # Open the JSON file in read mode
-        with open(file_path, 'r') as file:
-            # Load the existing data from the JSON file
-            existing_data = json.load(file)
-
-            # Filter the data based on the condition and remove the matching entry
-            existing_data = [data for data in existing_data if data != condition]
-      
-        # Open the same JSON file in write mode
-        with open(file_path, 'w') as file:
-            # Write the updated data (after deletion) to the JSON file
-            json.dump(existing_data, file)
+       
         flash("operator denied",category="success")
         
    
@@ -1415,13 +1415,12 @@ def  auth_5_books():
 
 @app.route("/operator/requests",methods=['GET','POST'])
 def  operator_requests():
-        with open(file_path_2, 'r') as file:
-            data = json.load(file)
         
-        print(data)
         cur = db.connection.cursor()
         query = f"""
-        SELECT * FROM users u  inner join email_table e on e.user_id =u.user_id inner join phone_table p on p.user_id = e.user_id  WHERE approved = FALSE AND user_type='school_users'
+       SELECT * FROM users u  inner join email_table e on e.user_id =u.user_id inner join phone_table p on p.user_id = e.user_id 
+       inner join school_users sch on sch.school_users_id = u.user_id
+           WHERE approved = FALSE AND u.user_type='school_users' and sch.operator_id ={session.get('user_id')}
         """
         cur.execute(query)
         column_names = [i[0] for i in cur.description]
@@ -1429,11 +1428,8 @@ def  operator_requests():
        
         cur.close()
        
-        for i, dictionary in enumerate(info_op):
-            if i < len(data):
-                dictionary.update(data[i])
-        print(info_op)
-        flash('Thanks for signing up wait for your operator to give permission')
+        
+        
         return render_template("oper_requests.html", info_op=info_op)
 @app.route('/accept_request_op', methods=['GET','POST'])
 def accept_request_op():
@@ -1463,10 +1459,7 @@ def accept_request_op():
               update users set approved = TRUE WHERE user_id ={user_id}; 
             """
         cur.execute(query)
-        query = f"""
-             INSERT INTO school_users (school_users_id,school_id,operator_id,age,status,user_type) VALUES ({user_id},{school_id},{session.get('user_id')},'{age}','{status}',"school_users");
-            """
-        cur.execute(query)
+       
         db.connection.commit()
         
         flash("operator accepted !",category="success")
@@ -1500,6 +1493,12 @@ def deny_request_op():
             """
         cur.execute(query)
         query = f"""
+               delete FROM  school_users  WHERE school_users_id ={user_id};
+            """
+        cur.execute(query)
+
+
+        query = f"""
               delete FROM  users  WHERE user_id ={user_id};
             """
         cur.execute(query)
@@ -1507,20 +1506,7 @@ def deny_request_op():
         db.connection.commit()
         cur.close()
        
-        condition = {"school": f"{school}", "status": f"{status}", "age": f"{age}"}
         
-        # Open the JSON file in read mode
-        with open(file_path_2, 'r') as file:
-            # Load the existing data from the JSON file
-            existing_data = json.load(file)
-
-            # Filter the data based on the condition and remove the matching entry
-            existing_data = [data for data in existing_data if data != condition]
-      
-        # Open the same JSON file in write mode
-        with open(file_path_2, 'w') as file:
-            # Write the updated data (after deletion) to the JSON file
-            json.dump(existing_data, file)
         flash("operator denied",category="success")
     return redirect('/operator/requests')
 

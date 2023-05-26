@@ -28,7 +28,7 @@
                             <td> {{ info.Last_name }} </td>
                             <td> {{ info.email }} </td>
                             <td> {{ info.phone_number }} </td>
-                           <td> {{ info.school }} </td>  
+                           <td> {{ info.name }} </td>  
                          
                            <td>
                            <form action="/accept_request" method="POST">
@@ -36,7 +36,7 @@
                             <input type="hidden" name="last_name" value="{{ info.LastName }}">
                             <input type="hidden" name="email" value="{{ info.email }}">
                             <input type="hidden" name="phone" value="{{ info.phone_number }}">
-                            <input type="hidden" name="school" value="{{ school }}">
+                            <input type="hidden" name="school" value="{{ info.name }}">
                             <button style="border:0"> <i class="fa-solid fa-circle-check" style="color: green;"></i> </button>                            
                         </form>
                     </td>
@@ -46,7 +46,7 @@
                             <input type="hidden" name="last_name" value="{{ info.LastName }}">
                             <input type="hidden" name="email" value="{{ info.email }}">
                             <input type="hidden" name="phone" value="{{ info.phone_number }}">
-                            <input type="hidden" name="school" value="{{  school }}">                       
+                            <input type="hidden" name="school" value="{{  info.name }}">                       
                                <button style="border:0"> <i class="fa-solid fa-ban" style="color: red;"></i></button>                       
                             </form>
                             </td>

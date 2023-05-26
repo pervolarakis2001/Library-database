@@ -1,0 +1,77 @@
+{% extends "base.html" %}  {% block title %}SignUp
+{% endblock title %}
+{% block content %}
+
+<style>
+.batn{
+    width: 6em;
+    height: 2em;
+    margin: 0.5em;
+    background: white;
+    color: black;
+    border: none;
+    border-radius: 0.625em;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    right: 500px;
+    top: 300px;
+    z-index: 1;
+    overflow: hidden;
+   }
+   .batn_2{
+    width: 6em;
+    height: 2em;
+    margin: 0.5em;
+    background: white;
+    color: black;
+    border: none;
+    border-radius: 0.625em;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    right: 800px;
+    top: 300px;
+    z-index: 1;
+    overflow: hidden;
+   }
+   
+   
+   button:hover {
+    color: white;
+  
+   }
+   
+   button:after {
+    content: "";
+    background: rgb(40, 61, 44);
+    position: absolute;
+    z-index: -1;
+    left: -20%;
+    right: -20%;
+    top: 0;
+    bottom: 0;
+    transform: skewX(-45deg) scale(0, 1);
+    transition: all 0.5s;
+    
+   
+   
+   }
+   
+   button:hover:after {
+    transform: skewX(-45deg) scale(1, 1);
+    -webkit-transition: all 0.5s;
+    transition: all 0.5s;
+    
+   }
+</style>
+
+ <h2 style="text-align: center;"> As what type of user do you want to access e-library ?</h2>
+
+<a href="/sign-up_op"> <button class="batn_2" style="width:200px;height: 100px;"> Operator </button> </a>
+
+<a href="/sign-up_user"> <button class="batn" style="width:200px;height: 100px;"> School User</button> </a>
+
+{% endblock %}
