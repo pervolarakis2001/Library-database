@@ -273,40 +273,11 @@ CREATE TABLE IF NOT EXISTS author_table (
 	ON UPDATE CASCADE
 )ENGINE = InnoDB;
 
-/*
-DELIMITER $
-CREATE TRIGGER chk_num_of_borr_users BEFORE INSERT ON borrowings
-FOR EACH ROW
-BEGIN
-    IF (SELECT COUNT(borrowed_id) FROM borrowings bor JOIN school_users su ON su.school_users_id = bor.school_users_id 
-    WHERE (bor.return_date = NULL AND status = 'student') GROUP BY school_users_id) = 2 THEN
-    SIGNAL SQLSTATE '45000'
-           SET MESSAGE_TEXT = 'check constraint on borrowings - students must borrow maximum 2 books per week';
-	   END IF;
-	IF (SELECT COUNT(borrowed_id) FROM borrowings bor JOIN school_users su ON su.school_users_id = bor.school_users_id 
-    WHERE (bor.return_date = NULL AND status = 'teacher') GROUP BY school_users_id) = 1 THEN
-    SIGNAL SQLSTATE '45000'
-           SET MESSAGE_TEXT = 'check constraint on borrowings - teachers must borrow maximum 2 books per week';
-	   END IF;
-END$   
-DELIMITER ; 
-*/
-
-/*
-DELIMITER $
-CREATE TRIGGER chk_num_of_res_users BEFORE INSERT ON reservations
-FOR EACH ROW
-BEGIN
-    IF (SELECT COUNT(reservation_id) FROM reservations res JOIN school_users su ON su.school_users_id = res.school_users_id 
-    WHERE (status = 'student') GROUP BY school_users_id) = 2 THEN
-    SIGNAL SQLSTATE '45000'
-           SET MESSAGE_TEXT = 'check constraint on borrowings - students must borrow maximum 2 books per week';
-	   END IF;
-	IF (SELECT COUNT(reservation_id) FROM reservations res JOIN school_users su ON su.school_users_id = res.school_users_id 
-    WHERE (status = 'teacher') GROUP BY school_users_id) = 1 THEN
-    SIGNAL SQLSTATE '45000'
-           SET MESSAGE_TEXT = 'check constraint on borrowings - teachers must borrow maximum 2 books per week';
-	   END IF;
-END$   
-DELIMITER ; 
-*/ 
+-- --------- VIEWS ----------------------
+create view user_security as 
+		select
+         concat(substr(email,1,2), '*****', substr(email, -4)) email,
+         concat('*****') password,
+           concat('*****') username,
+        concat(substr(phone_number,1,2), '*****', substr(phone_number, -2)) phone_number
+        from users u inner join email_table e on e.user_id=u.user_id inner join phone_table p on p.user_id = u.user_id
