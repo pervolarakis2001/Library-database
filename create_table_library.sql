@@ -8,12 +8,13 @@ CREATE TABLE IF NOT EXISTS users(
 	First_name VARCHAR(20) not null,
 	Last_name VARCHAR(20) not null,
 	user_type ENUM('admin','operator','school_users') NOT NULL,
-    username VARCHAR(50) NOT NULL,
+    username  VARCHAR(50) NOT NULL unique,
+    approved BOOLEAN NOT NULL,
    password VARCHAR(15) NOT NULL,
 	primary key(user_id)
 )ENGINE = InnoDB;
 
-select * from school
+SELECT * FROM USERS
 -- -----------------------------------------------------
 -- Table "admin"
 -- -----------------------------------------------------
@@ -55,7 +56,7 @@ create table IF NOT EXISTS school(
 	name VARCHAR(50) NOT NULL,
 	postcode VARCHAR(50)  NOT NULL,
 	city VARCHAR(50) NOT NULL,
-	email VARCHAR(50) UNIQUE NOT NULL,
+	school_email VARCHAR(50) UNIQUE NOT NULL,
 	pr_First_name VARCHAR(50),
 	pr_Last_name VARCHAR(50),
 	PRIMARY KEY (school_id),
@@ -69,7 +70,9 @@ create table IF NOT EXISTS school(
 	ON UPDATE CASCADE
 )ENGINE = InnoDB;
 
-
+ALTER TABLE school 
+RENAME COLUMN email  TO school_email;
+select * from school
 -- -----------------------------------------------------
 -- Table "school_users"
 -- -----------------------------------------------------
@@ -95,6 +98,7 @@ CREATE TABLE IF NOT EXISTS school_users(
 	ON DELETE RESTRICT
     ON UPDATE CASCADE
 )ENGINE = InnoDB;
+
 
 -- -----------------------------------------------------
 -- Table "books"
@@ -287,7 +291,7 @@ BEGIN
 END$   
 DELIMITER ; 
 */
-select * from reservations;
+
 /*
 DELIMITER $
 CREATE TRIGGER chk_num_of_res_users BEFORE INSERT ON reservations
@@ -306,4 +310,3 @@ BEGIN
 END$   
 DELIMITER ; 
 */ 
-
