@@ -97,7 +97,7 @@ def sign_up_op():
                         
                         cur.execute(query) 
                         query = f"""
-                            INSERT INTO school (school_id,admin_id,name,postcode,city,email,pr_First_name,pr_Last_name,operator_id) VALUES ('{school_id}',9119000,'{School}','{postcode}','{city}','{email_school}','{pr_First_name}','{pr_Last_name}',{user_id});
+                            INSERT INTO school (school_id,admin_id,name,postcode,city,school_email,pr_First_name,pr_Last_name,operator_id) VALUES ('{school_id}',9119000,'{School}','{postcode}','{city}','{email_school}','{pr_First_name}','{pr_Last_name}',{user_id});
 
                         """
                         cur.execute(query) 
@@ -277,44 +277,6 @@ def admin_schools():
     cur.close()    
     return render_template("admin_schools.html", school=school , form=form )
 
-@app.route("/admin/schools/add", methods=['GET','POST'])
-def admin_schools_add():
-    
-    cur = db.connection.cursor()
-    
-    
-    if(request.method == "POST"):        
-        school_name= request.form.get('school_name')
-        postcode= request.form.get('postcode')
-        city = request.form.get('city')
-        email = request.form.get('email')
-        pr_First_name = request.form.get('pr_First_name')
-        pr_Last_name = request.form.get('pr_Last_name')
-        op_First_name = request.form.get('op_First_name')
-        op_Last_name = request.form.get('op_Last_name')
-        operator_id = request.form.get('operator_id')
-        admin_id = 911900
-        cur.execute("SELECT MAX(school_id) FROM school")
-        id = str(cur.fetchall()[0][0]+1)
-        
-        admin_id = 9119000
-        cur.execute('SELECT name FROM school WHERE name = %s ',(school_name,))
-        record = cur.fetchone() 
-        if record:
-            flash("School already exists!",category= 'error')
-        else:     
-            query = f"""
-            INSERT INTO school (school_id, admin_id, operator_id,name,postcode,city,email,pr_First_name,pr_Last_name) VALUES ({id},'{admin_id}','{operator_id}','{school_name}','{postcode}','{city}','{email}','{pr_First_name}','{pr_Last_name}')
-            """
-            
-            cur.execute(query)
-            db.connection.commit()
-            cur.close()
-
-            flash("School added successfully", category="success")
-            return  redirect('/admin/schools')
-            
-    return render_template("school_add.html")
 
 
 @app.route("/admin/requests", methods=['GET','POST'])
@@ -351,13 +313,13 @@ def accept_request():
             """
         cur.execute(query)
         user_id = str(cur.fetchall()[0][0])
-        
+        print(user_id)
         query = f"""
               update users set approved = TRUE WHERE user_id ={user_id}; 
             """
         cur.execute(query)
        
-        
+        db.connection.commit()
         flash("operator accepted please add school of operator!",category="success")
         cur.close()
     return redirect('/admin/requests')

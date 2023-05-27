@@ -5,18 +5,22 @@
 <center><h1>Requests</h1></center>
 <div class="row" id="row" >            
     <div class="col-md-12" >     
-        <div class="card" id="card-container" style="width: 1000px; font-size: 15px;">
+        <div class="card" id="card-container" style="width: 1200px; font-size: 15px;">
             <div class="card-body" >
                 <table class="table table-striped table-sm table-borderless">
                     <thead>
                         <tr>
-                            <th >First_name</th>
+                            <th>First_name</th>
                             <th>Last_name</th>
                             <th>Email</th>  
                             <th>Phone</th>                         
                             <th>school</th>
-                            <th>accept</th>
-                            <th>deny</th>
+                            <th>school email</th>
+                            <th>postcode</th>
+                            <th>city</th>
+                            <th>Pr_F_name</th>
+                            <th> Pr_L_name </th>
+                            <th></th>
                             <th></th>
                             
                         </tr>
@@ -28,7 +32,13 @@
                             <td> {{ info.Last_name }} </td>
                             <td> {{ info.email }} </td>
                             <td> {{ info.phone_number }} </td>
-                           <td> {{ info.name }} </td>  
+                            <td> {{ info.name }} </td>
+                            <td> {{ info.school_email }} </td>
+                            <td> {{ info.postcode }} </td>
+                            <td> {{ info.city }} </td>
+                            <td> {{ info.pr_First_name }} </td>
+                            <td> {{ info.pr_Last_name }} </td>
+                           
                          
                            <td>
                            <form action="/accept_request" method="POST">
