@@ -30,24 +30,37 @@
                                     <td> {{ sch.name }} </td>
                                     <td> {{ sch.postcode }} </td>
                                     <td> {{ sch.city}} </td>
-                                    <td> {{ sch.email }} </td>
+                                    <td> {{ sch.school_email }} </td>
                                     <td> {{ sch.pr_First_name}} </td>
                                     <td> {{ sch.pr_Last_name }} </td>
-                                    
                                     <td>
-                                        <a type="button" onclick="setModalFields(this)"
-                                        data-toggle="modal" 
-                                        data-op="{{sch.operator_id}}"
-                                        data-name="{{sch.name}}"  data-id= "{{sch.school_id}}"
-                                        data-email="{{sch.email}}"
-                                        data-city="{{sch.city}}" data-pos="{{sch.postcode}}" 
-                                        data-prF="{{sch.pr_First_name}}" data-prL="{{sch.pr_Last_name}}"
-                                        data-bs-toggle = "modal"
-                                        data-bs-target="#editModal">
-                                        </a>
+                               
+                                        <form action="/change_school" method="POST">
+                                            <input type="hidden" name="school_id" value="{{sch.school_id }}">
+                                            <input type="hidden" name="operator_id" value="{{ sch.operator_id}}">
+                                            <input type="hidden" name="school" value="{{sch.name }}">
+                                            <input type="hidden" name="postcode" value="{{sch.postcode }}">
+                                            <input type="hidden" name="city" value="{{sch.city }}">
+                                            <input type="hidden" name="school_email" value="{{sch.school_email }}">
+                                            <input type="hidden" name="pr_First_name" value="{{sch.pr_First_name }}">
+                                            <input type="hidden" name="pr_Lastt_name" value="{{sch.pr_Last_name }}">
+
+                                            <button style="border:0"> <i class="fa-solid fa-pen-to-square"></i> </button>                            
+                                        </form>
                                     </td>
-                                   
-                                    
+                                    <td>
+                                        <form action="/delete_school" method="POST">
+                                            <input type="hidden" name="school_id" value="{{sch.school_id }}">
+                                            <input type="hidden" name="operator_id" value="{{ sch.operator_id}}">
+                                            <input type="hidden" name="school" value="{{sch.name }}">
+                                            <input type="hidden" name="postcode" value="{{sch.postcode }}">
+                                            <input type="hidden" name="city" value="{{sch.city }}">
+                                            <input type="hidden" name="school_email" value="{{sch.school_email }}">
+                                            <input type="hidden" name="pr_First_name" value="{{sch.pr_First_name }}">
+                                            <input type="hidden" name="pr_Lastt_name" value="{{sch.pr_Last_name }}">                          
+                                               <button style="border:0"> <i class="fa-solid fa-trash"></i></button>                       
+                                            </form>
+                                            </td>                                   
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -61,96 +74,5 @@
         </div>
     </div>
     
-    <div id="editModal" class="modal fade" role="dialog">
-        <div class="modal-dialog">
-            <!-- Modal content-->
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">Update school</h4>
-                </div>
-                <div class="modal-body">
-                    <form class="form-horizontal" id="modal-form">
-                        {{ form.hidden_tag() }}
-                        <div style="text-align: center;">
-                            <p><b>Edit school with ID :
-                            <input type="text" name="id" id="id" readonly></b></p>
-                            
-                    
-                               
-                            <p>School id :
-                                {{ form.id(id ="school_id", required = False) }}</p>
-                               
-                            <p>School Name :
-                            {{ form.name(id = "name", required = False) }}</p>
-                                                      
-                            <p>School operator :
-                                {{ form.op(id = "operator_id", required = False) }}</p>
-                            
-                          
-                            <p>
-                                City :
-                                {{ form.city(id = "city", required = False) }}
-                            </p>
-                            <p>
-                                Postal Code :
-                                {{ form.pos(id = "postcode", required = False) }}
-                            </p>
-
-                            <p>
-                                Email:
-                                {{ form.email(id = "email", required = False) }}  
-                            </p>
-                            <p>
-                               Primary First name :
-                                {{ form.prF(id = "pr_First_name", required = False) }}
-                            </p>
-                            <p>
-                                Primary Last name :
-                                 {{ form.prL(id = "pr_Last_name", required = False) }}
-                             </p>
-                            <p><input type="text" name="type" id="org-type" readonly></b></p>
-                            
-                            
-                        </div>
-                       
-                    </form>
-                </div>
-
-                <div class="modal-footer">
-                    {{ form.submit(class = "btn btn btn-success", form = "modal-form", value = "Update") }}
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
     
-        </div>
-    
-    
-    
-    
-
-
-
-<script>
-    function setModalFields(row) {
-        document.getElementById("id").value = row.getAttribute("data-id");
-        document.getElementById("Name").value = row.getAttribute("data-name");
-       
-        document.getElementById("operator_id").value = row.getAttribute("data-op");
-        document.getElementById("email").value = row.getAttribute("data-email");
-        document.getElementById("pr_First_name").value = row.getAttribute("data-prF");       
-        document.getElementById("pr_Last_name").value = row.getAttribute("data-prL");
-        document.getElementById("city").value = row.getAttribute("data-city");
-        document.getElementById("postcode").value = row.getAttribute("data-pos");
-       
-       
-        document.getElementById("modal-form").action = "\admin\schools\add" + document.getElementById("id").value;
-        document.getElementById("modal-form").method = "POST";
-        // document.getElementById("submit").addEventListener("click", (e) => {e.preventDefault();});
-        // commented line above would prevent the default behavior of the submit button, that is, sending the
-        // form data with a post request to the determined address and subsequently closing the pop-up
-    }
-    
-
-</script>
-
 {% endblock %}

@@ -14,7 +14,7 @@
                             <th>Last_name</th>
                             <th>Email</th>  
                             <th>Phone</th>                         
-                            <th>school</th>
+                         
                             <th>status</th>
                             <th>Age</th>
                             <th>accept</th>
@@ -30,7 +30,7 @@
                             <td> {{ info.Last_name }} </td>
                             <td> {{ info.email }} </td>
                             <td> {{ info.phone_number }} </td>
-                           <td> {{ info.school }} </td>  
+                         
                            <td> {{ info.status }} </td>  
                            <td> {{ info.age}} </td>  
                          
@@ -41,7 +41,7 @@
                             <input type="hidden" name="email" value="{{ info.email }}">
                             <input type="hidden" name="phone" value="{{ info.phone_number }}">
                             <input type="hidden" name="status" value="{{ info.status }}">
-                            <input type="hidden" name="school" value="{{ info.school }}">
+                            <input type="hidden" name="school" value="{{ info.name }}">
                             <input type="hidden" name="age" value="{{ info.age }}">
                             <button style="border:0"> <i class="fa-solid fa-circle-check" style="color: green;"></i> </button>                            
                         </form>

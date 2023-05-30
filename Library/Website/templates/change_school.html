@@ -1,0 +1,52 @@
+{% extends "base2.html" %}  {% block title %}Admin
+{% endblock title %}
+{% block content %}
+
+
+<div class="card-body">
+    <h1>  Change school information</h1>
+    <form action="/change_school_2",  method="POST">
+      <div class="form-group">
+          
+       
+      
+      <div class="form-group">
+        <label for="school">School Name:</label>
+        <input  class="form-control" name="school"  type="text">
+      </div>
+      
+      <div class="form-group">
+          <label for="postcode">postcode:</label>
+          <input class="form-control" name="postcode" type="text">
+        </div>
+      <div class="form-group">
+        <label for="city">city:</label>
+        <input  class="form-control" name="city" id="confirm-password" type="text">
+      </div>
+
+      <div class="form-group">
+        <label for="email_school">School email:</label>
+        <input class="form-control" name="email_school" id="confirm-password" type="text">
+      </div>
+
+      <div class="form-group">
+        <label for="pr_First_name">Primary Fisrt Name :</label>
+        <input class="form-control" name="pr_First_name" id="confirm-password" type="text">
+      </div>
+      <div class="form-group">
+        <label for="pr_Last_name">Primary Last Name :</label>
+        <input class="form-control" name="pr_Last_name" id="confirm-password" type="text">
+      </div>
+      
+      
+      <center><input type="submit" class="btn_3" value="save">  </center>  
+      </form>
+    </div>
+  </div>
+       
+       
+
+
+        
+
+{% endblock content %}

@@ -13,8 +13,9 @@
                             <th>username</th>
                             <th>First name</th>
                             <th>Last name </th>
-                            <th>email</th>
                             <th>school</th>
+                            <th>email</th>
+                          
                             <th>Phone</th> 
                             <th></th> 
                             <th></th>
@@ -26,9 +27,13 @@
                             <td> {{ session.get("username") }} </td>
                             <td> {{ session.get("First_name") }} </td>
                             <td> {{ session.get("Last_name") }} </td>
-                            <td> {{ session.get('email') }} </td>
                             <td> {{ session.get('school')}} </td>
-                            <td> {{ session.get('phone')}} </td>
+                            {% for sec in security%}
+                            <td> {{ sec.email }} </td>
+                          
+                            <td> {{ sec.phone_number}} </td>
+                          
+                            {%endfor%}
                             <td>
                                 <form action="/change_profile" method="POST">
                                  <input type="hidden" name="first_name" value="{{ session.get('username') }}">

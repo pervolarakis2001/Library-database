@@ -14,7 +14,7 @@
                             <th>First_name</th>
                             <th>Last_name</th>                       
                             <th>school</th>
-                           
+                            <th>Phone</th>
                             <th>delete</th>                     
                             <th></th>                         
                         </tr>
@@ -25,7 +25,8 @@
                             <td> {{ info.user_id }} </td>
                             <td> {{ info.First_name }} </td>
                             <td> {{ info.Last_name }} </td>                           
-                           <td> {{ info.name }} </td>                            
+                           <td> {{ info.name }} </td>
+                           <td> {{ info.phone_number }} </td>                            
                     <td>
                         <form action="/delete_op" method="POST">
                             <input type="hidden" name="first_name" value="{{ info.FirstName }}">

@@ -6,8 +6,7 @@ from Website import app, db  # initially created by __init__.py, need to be used
 from Website.model import *
 import subprocess
 from datetime import date
-import json
-import os
+import subprocess
 
 @app.route("/")
 def index():
@@ -54,9 +53,9 @@ def sign_up_op():
                     cur = db.connection.cursor(MySQLdb.cursors.DictCursor)
                     
                     query = f"""
-                    SELECT u.username,u.password  from users u inner join operator op on u.user_id=op.operator_id 
+                    SELECT u.username from users u inner join operator op on u.user_id=op.operator_id 
                     WHERE username='{username}'
-                    and password='{password} and approved=TRUE'
+                    and approved=TRUE
                     """
                     cur.execute(query)                 
                     record_1 = cur.fetchone() 
@@ -127,15 +126,15 @@ def sign_up_user():
         
    
         query = f"""
-        SELECT u.username,u.password  from users u inner join operator op on u.user_id=op.operator_id 
+        SELECT username  from users 
         WHERE username='{username}'
-        and password='{password} AND approved=TRUE'
+         AND approved=TRUE
         """
         cur.execute(query)                 
         record_1 = cur.fetchone() 
         
         if record_1:
-            flash('operator allready exists',category='error')
+            flash('user allready exists',category='error')
         else:
             cur.execute("SELECT MAX(user_id) as user FROM users")
             user_id = cur.fetchone()
@@ -277,6 +276,107 @@ def admin_schools():
     cur.close()    
     return render_template("admin_schools.html", school=school , form=form )
 
+@app.route("/change_school", methods=['GET','POST'])
+def admin_change_schools():
+    school_id =  request.form.get('school_id')
+    session['sch_id_help']=school_id
+    return render_template("change_school.html" )
+
+@app.route("/change_school_2", methods=['GET','POST'])
+def admin_change_schools_2():
+    cur = db.connection.cursor()
+    if(request.method == "POST"):
+            try:
+                school_id =  session.get('sch_id_help')
+                
+                data = request.form.get('school')
+                name= f"name = '{data}'" if (data != "") else ""
+                
+                data= request.form.get('postcode')
+                postcode = f"postcode = {data}" if (data != "") else "" 
+                
+                data = request.form.get('city')
+                city  = f"city  = '{data}'" if (data != "") else ""
+                
+                data =   request.form.get('email_school')
+                school_email = f"school_email = {data}" if (data != "") else ""
+
+                data = request.form.get('pr_First_name')
+                pr_First_name  = f"pr_First_name  = '{data}'" if (data != "") else ""
+
+                data = request.form.get('pr_Last_name')
+                pr_Last_name = f" pr_Last_name = '{data}'  " if (data != "") else ""
+
+                
+                additionalQuery = [
+                name,
+                postcode,
+                city ,
+                school_email,
+                pr_First_name ,
+                pr_Last_name
+                
+                ]
+
+                additionalQuery = ",".join(list(filter(lambda i: i != "", additionalQuery)))
+              
+                if  additionalQuery != "":
+                    my_query = (
+                        f"update school set "
+                        + additionalQuery 
+                        + f" where school_id ={school_id}"
+                    )
+                    cur.execute(my_query)
+                    db.connection.commit()
+                
+                flash('Changes Saved !',category='success')
+                cur.close()
+            except Exception as e:
+                error_message = str(e)
+                return render_template('error.html', error_message=error_message)
+
+    return render_template("change_school.html" )
+
+@app.route("/delete_school", methods=['GET','POST'])
+def admin_delete_schools():
+    cur = db.connection.cursor()
+    if(request.method == "POST"):
+
+        try:
+
+            school_id = request.form['school_id']
+            query = f"""
+                SELECT * FROM  school_users   WHERE school_id = {school_id};  
+                """
+            cur.execute(query)
+            record = cur.fetchone()
+            if record:
+            
+                    query = f"""
+                        delete FROM  school_users   WHERE school_id = {school_id};  
+                        """
+                    cur.execute(query)
+                    query = f"""
+                        delete FROM  school  WHERE school_id = {school_id};  
+                        """
+                    cur.execute(query)
+                
+                    db.connection.commit()
+            else:
+                    query = f"""
+                        delete FROM  school  WHERE school_id = {school_id};  
+                        """
+                    cur.execute(query)
+                
+                    db.connection.commit()
+                 
+            cur.close()
+                    
+            flash("school deleted!",category="success")
+        except Exception as e:
+            error_message = str(e)
+            return render_template('error.html', error_message=error_message)
+    return redirect("/admin/schools" )
 
 
 @app.route("/admin/requests", methods=['GET','POST'])
@@ -294,7 +394,7 @@ def admin_requests():
        
         cur.close()
        
-        print(info_op)
+       
         return render_template("admin_requests.html", info_op=info_op)
 
 @app.route('/accept_request', methods=['GET','POST'])
@@ -596,26 +696,8 @@ def operator_book_change():
 @app.route('/backup', methods=['GET','POST'])
 def backup():
     try:
-        cursor = db.connection.cursor()
-        d_b = 'library'
-        
-            # Getting all the table names
-        cursor.execute('SHOW TABLES;')
-        table_names = []
-        for record in cursor.fetchall():
-            table_names.append(record[0])
-        
-        backup_dbname = 'library' + '_backup'
-        try:
-            cursor.execute(f'CREATE DATABASE {backup_dbname}')
-        except:
-            pass
-        
-        cursor.execute(f'USE {backup_dbname}')
-        print('ok')
-        for table_name in table_names:
-            cursor.execute(
-                f'CREATE TABLE {table_name} SELECT * FROM {d_b}.{table_name}')
+        command = f"mysqldump -u root -p 1532001 --databases library > backup.sql"
+        subprocess.run(command, shell=True)
         flash('backup of database created',category='success')
     except Exception as e:
             error_message = str(e)
@@ -632,21 +714,8 @@ def restore():
     d_b = 'library'
     backup_dbname = d_b + '_backup'
     try:
-        # Drop the existing database
-        cursor.execute(f"DROP DATABASE IF EXISTS {d_b}")
-        # Create a new empty database
-        cursor.execute(f"CREATE DATABASE {d_b}")
-        # Switch to the new database
-        cursor.execute(f"USE {d_b}")
-
-        # Get the table names from the backup database
-        cursor.execute(f"SHOW TABLES IN {backup_dbname}")
-        table_names = [record[0] for record in cursor.fetchall()]
-
-        # Restore each table from the backup to the new database
-        for table_name in table_names:
-            cursor.execute(f"CREATE TABLE {table_name} SELECT * FROM {backup_dbname}.{table_name}")
-
+        command = f"mysql -u root -p --database library < backup.sql"
+        subprocess.run(command, shell=True)
         flash('Restore Successful', category='success')
     except Exception as e:
         flash('Restore Failed', category='error')
@@ -663,17 +732,26 @@ def school_users():
 
 @app.route("/sch_user_profile",methods=['GET','POST'])
 def sch_user_profile():
-      
+        cur = db.connection.cursor()
+  
         username = session.get("username")
         First_name = session.get("First_name")
         Last_name = session.get("Last_name")
         email = session.get('email')
         school = session.get('school')
         phone = session.get('phone')
+        query = f"""
+            select * from  user_security where user_id = {session.get('user_id')}
+            """
+        cur.execute(query)
+        #name ='{session.get('school')}'
+        column_names = [i[0] for i in cur.description]
+        security = [dict(zip(column_names, entry)) for entry in cur.fetchall()]
+            
         if session.get('status') ==  "student":
-            return render_template("student_prof.html",session=session)
+            return render_template("student_prof.html",session=session,security= security)
         else:
-            return render_template("teacher_prof.html",session=session)
+            return render_template("teacher_prof.html",session=session,security= security)
             
        
 
@@ -780,9 +858,10 @@ def find_book_user():
             query = f"""
             SELECT b.isbn,b.title,b.publisher, b.num_of_pages, b.avail_copies, b.language, a.author, c.category FROM books b  inner join author_table a on a.ISBN = b.ISBN inner join school sch on sch.school_id = b.school_id 
             inner join category_table c on c.ISBN= b.ISBN 
-            WHERE title ='{title}' AND category='{category}' AND author='{author}' AND name ='{session.get('school')}'
+            WHERE title ='{title}' AND category='{category}' AND author='{author}' 
             """
             cur.execute(query)
+            #name ='{session.get('school')}'
             column_names = [i[0] for i in cur.description]
             books = [dict(zip(column_names, entry)) for entry in cur.fetchall()]
             
@@ -844,37 +923,40 @@ def rate_book():
     rating = request.form.get('rating')
     comments = request.form.get('comment')
     if(request.method == "POST"):  
-        
-        cur.execute("SELECT MAX(rating_id) FROM ratings")
-        rating_id = str(cur.fetchall()[0][0]+1)
-        ISBN = session.get('isbn_rating')
-        query = f"""
-            SELECT operator_id FROM school_users where school_users_id = {session.get('user_id')}
-            """
-        cur.execute(query)
-       
-        operator_id = cur.fetchone()
-        
-        operator_id =operator_id[0]
-        session['operator_id']= operator_id
-        if session['status']== 'student':
-            # senf request to operator to verify comment
+        try:
+            cur.execute("SELECT MAX(rating_id) FROM ratings")
+            rating_id = str(cur.fetchall()[0][0]+1)
+            ISBN = session.get('isbn_rating')
             query = f"""
-            INSERT INTO ratings (rating_id,ISBN,operator_id,school_users_id,comments,rating_score,approved) VALUES ({rating_id},'{ISBN}',{session.get('operator_id')},{session.get('user_id')},'{comments}','{rating}',FALSE);
-            """
-            cur.execute(query) 
-            db.connection.commit()
-            flash('your comment saved and will be published after verification of your operator',category='sucess')
+                SELECT operator_id FROM school_users where school_users_id = {session.get('user_id')}
+                """
+            cur.execute(query)
+        
+            operator_id = cur.fetchone()
+            
+            operator_id =operator_id[0]
+            session['operator_id']= operator_id
+            if session['status']== 'student':
+                # senf request to operator to verify comment
+                query = f"""
+                INSERT INTO ratings (rating_id,ISBN,operator_id,school_users_id,comments,rating_score,approved) VALUES ({rating_id},'{ISBN}',{session.get('operator_id')},{session.get('user_id')},'{comments}','{rating}',FALSE);
+                """
+                cur.execute(query) 
+                db.connection.commit()
+                flash('your comment saved and will be published after verification of your operator',category='sucess')
 
-        elif session['status'] == 'teacher':          
-            query = f"""
-            INSERT INTO ratings (rating_id,ISBN,operator_id,school_users_id,comments,rating_score,approved) VALUES ({rating_id},'{ISBN}',{session.get('operator_id')},{session.get('user_id')},'{comments}','{rating}',TRUE);
-            """
-            print('ok')
-            cur.execute(query) 
-            db.connection.commit()
-            cur.close()
-            flash('comment published successfuly',category='success')
+            elif session['status'] == 'teacher':          
+                query = f"""
+                INSERT INTO ratings (rating_id,ISBN,operator_id,school_users_id,comments,rating_score,approved) VALUES ({rating_id},'{ISBN}',{session.get('operator_id')},{session.get('user_id')},'{comments}','{rating}',TRUE);
+                """
+                print('ok')
+                cur.execute(query) 
+                db.connection.commit()
+                cur.close()
+                flash('comment published successfuly',category='success')
+        except Exception as e:
+            error_message = "Rating must be in Linkert scale!"
+            return render_template('error.html', error_message=error_message)
     return redirect("/select/book")
 
     
@@ -1174,7 +1256,7 @@ def find_book_operator():
             query = f"""
             SELECT b.isbn,b.title,b.publisher, b.num_of_pages, b.avail_copies, b.language, a.author, c.category FROM books b  inner join author_table a on a.ISBN = b.ISBN inner join school sch on sch.school_id = b.school_id 
             inner join category_table c on c.ISBN= b.ISBN 
-            WHERE title ='{title}' AND category='{category}' AND author='{author}' AND avail_copies = {avail_copies} AND b.operator_id ='{session.get('user_id')}'
+            WHERE title ='{title}' AND category='{category}' AND author='{author}' AND avail_copies = {avail_copies} AND b.operator_id ={session.get('user_id')}
             """
             cur.execute(query)
             column_names = [i[0] for i in cur.description]
@@ -1195,8 +1277,10 @@ def find_rating_operator():
             category = request.form.get('category')
             print(sch_user_id)
             query = f"""
-           select avg(rating_score) as score,school_users_id,category from ratings r INNER JOIN category_table c  on c.Isbn = r.ISBN WHERE 
-             r.school_users_id = {sch_user_id} and c.category = '{category}'
+          select avg(rating_score) as score,r.school_users_id,category from ratings r INNER JOIN category_table c  on c.Isbn = r.ISBN inner join borrowings bor 
+            on bor.school_users_id =  r.school_users_id inner join books b on b.ISBN=r.ISBN inner join operator op on op.operator_id =b.operator_id   WHERE 
+             r.school_users_id = {sch_user_id} and c.category = '{category}' and op.operator_id = {session.get('user_id')}   group by r.school_users_id , c.category
+             
              
              """
             cur.execute(query)
@@ -1381,7 +1465,7 @@ def  operator_requests():
         cur = db.connection.cursor()
         query = f"""
        SELECT * FROM users u  inner join email_table e on e.user_id =u.user_id inner join phone_table p on p.user_id = e.user_id 
-       inner join school_users sch on sch.school_users_id = u.user_id
+       inner join school_users sch on sch.school_users_id = u.user_id   
            WHERE approved = FALSE AND u.user_type='school_users' and sch.operator_id ={session.get('user_id')}
         """
         cur.execute(query)
@@ -1478,7 +1562,7 @@ def  vewoperator():
         
         cur = db.connection.cursor()
         query = f"""
-        SELECT * FROM operator op inner join users u on u.user_id = op.operator_id inner join school sc on op.operator_id = sc.operator_id
+        SELECT * FROM operator op inner join users u on u.user_id = op.operator_id inner join school sc on op.operator_id = sc.operator_id inner join user_security us on us.user_id =u.user_id 
         """
         cur.execute(query)
         column_names = [i[0] for i in cur.description]
@@ -1532,7 +1616,8 @@ def  vew_operator():
        
         cur = db.connection.cursor()
         query = f"""
-        SELECT * FROM school_users op inner join users u on u.user_id = op.school_users_id inner join school sc on op.operator_id = sc.operator_id where op.operator_id ={session.get('user_id')}
+        SELECT * FROM school_users op inner join users u on u.user_id = op.school_users_id 
+        inner join email_table us on us.user_id = u.user_id inner join school sc on op.operator_id = sc.operator_id where op.operator_id ={session.get('user_id')}
         """
         cur.execute(query)
         column_names = [i[0] for i in cur.description]
