@@ -1,4 +1,3 @@
-use library; 
 
 -- 3.1.1 
 select * from borrowings;
