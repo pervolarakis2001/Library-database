@@ -69,33 +69,18 @@ select bor.operator_id, us.First_name, us.Last_name,count(bor.borrowed_id) as co
                     having count(bor.borrowed_id) > 20 ; 
 		    
 -- 3.1.6 
--- 2OO books 100 of them have 2 categories
-SELECT cat.category, cat.ISBN FROM category_table cat INNER JOIN borrowings bor ON bor.ISBN = cat.ISBN   WHERE cat.ISBN in(
-SELECT ISBN FROM category_table 
-group by ISBN having count(cat.category)>1);
-
-select ct1.category, ct2.category, count(bor.borrowed_id) from borrowings bor 
-inner join books b on b.ISBN = bor.ISBN 
-inner join category_table ct1 on ct1.ISBN = b.ISBN 
-cross join category_table ct2 on ct1.category <> ct2.category  AND ct1.category < ct2.category AND ct1.ISBN = ct2.ISBN
-group by ct1.category,ct2.category
-limit 3;
-
- select distinct ct1.category,ct2.category from category_table ct1 cross join category_table ct2 
- on ct1.category <> ct2.category  AND ct1.category < ct2.category;
+select ct1.category as cat1, ct2.category as cat2, count(bor.borrowed_id) as count from borrowings bor 
+                    inner join books b on b.ISBN = bor.ISBN 
+                    inner join category_table ct1 on ct1.ISBN = b.ISBN 
+                    cross join category_table ct2 on ct1.category <> ct2.category  AND ct1.category < ct2.category AND ct1.ISBN = ct2.ISBN
+                    group by ct1.category,ct2.category
+                    ORDER BY
+                    COUNT(bor.borrowed_id) DESC
+                    limit 3;
 
 
 -- 3.1.7
--- select all the authors with their respectable amount of books 
-select aut.author, count(b.ISBN) as count_of_books_per_author from books b 
-	inner join author_table aut on aut.ISBN = b.ISBN 
-    group by aut.author;
-    
--- select author with maximum books 
-select z.author, max(z.count_of_books_per_author) as max_books_author from 
-    (select aut.author, count(b.ISBN) as count_of_books_per_author from books b 
-	inner join author_table aut on aut.ISBN = b.ISBN 
-	group by aut.author) z;
+
     
 -- answer the question
 with aut_five_less_max (author,count_of_books_per_author) as
