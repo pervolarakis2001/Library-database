@@ -1,28 +1,27 @@
 
 -- 3.1.1 
-select * from borrowings;
-select sch.name, count(borrowed_id) from borrowings bor 
-INNER JOIN operator op ON bor.operator_id = op.operator_id 
-INNER JOIN school sch ON  sch.operator_id = op.operator_id 
-GROUP BY sch.name;
+ select sch.name as school, count(borrowed_id) as count from borrowings bor 
+                        INNER JOIN operator op ON bor.operator_id = op.operator_id 
+                        INNER JOIN school sch ON  sch.operator_id = op.operator_id WHERE MONTH(borrowing_date) ='{month}' AND YEAR(borrowing_date) ='{year}'
+                        GROUP BY sch.name;
 -- leipoun kritiria anazitisis
 
 select distinct * from books b inner join category_table ct on b.ISBN = ct.ISBN;
 select * from books;
 
 -- 3.1.2
-SELECT ct.category, aut.author FROM books b 
-INNER JOIN category_table ct ON b.ISBN = ct.ISBN
-LEFT JOIN author_table aut ON ct.ISBN = aut.ISBN
-GROUP BY aut.author ORDER BY ct.category;
+SELECT  category, us.First_name, us.Last_name FROM books b 
+                        INNER JOIN category_table ct ON b.ISBN = ct.ISBN
+                        INNER JOIN borrowings bor ON bor.ISBN = ct.ISBN
+                        INNER JOIN school_users schu ON bor.school_users_id = schu.school_users_id
+                        INNER JOIN users us ON us.user_id = schu.school_users_id
+                        WHERE schu.status = "teacher" AND borrowing_date > DATE_ADD(curdate(),interval -1 year) 
+                         AND category='{category}' ;   
 
-SELECT ct.category, schu.school_users_id, us.First_name, us.Last_name FROM books b 
-INNER JOIN category_table ct ON b.ISBN = ct.ISBN
-INNER JOIN borrowings bor ON bor.ISBN = ct.ISBN
-INNER JOIN school_users schu ON bor.school_users_id = schu.school_users_id
-INNER JOIN users us ON us.user_id = schu.school_users_id
-WHERE schu.status = "teacher" AND borrowing_date > DATE_ADD(curdate(),interval -1 year) ORDER BY ct.category ASC;
-
+SELECT ct.category, author FROM books b 
+                        INNER JOIN category_table ct ON b.ISBN = ct.ISBN
+                        LEFT JOIN author_table aut ON ct.ISBN = aut.ISBN
+                        WHERE category='{category}' ; 
 
 -- 3.1.3 
 
