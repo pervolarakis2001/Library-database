@@ -6,6 +6,6 @@ Project for the Databases 2023 class in NTUA ECE that simulates a Database for S
 ΣΠΕΝΤΖΟΥΡΗΣ ΙΩΑΝΝΗΣ 9119038
 
 # ER Diagram (in Greek)
-![Alt text](https://github.com/pervolarakis2001/Library-database/blob/main/ER_diagram.png)
+![Alt text](https://github.com/pervolarakis2001/Library-database/Schemas/blob/main/ER_diagram.png)
 # Relational Model
-![Alt text](https://github.com/pervolarakis2001/Library-database/blob/main/Relational_schema.png)
+![Alt text](https://github.com/pervolarakis2001/Library-database/Schemas/blob/main/Relational_schema.png)
