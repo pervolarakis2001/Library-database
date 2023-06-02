@@ -5,18 +5,23 @@
 <h3> Please enter category  </h3>
 <center>
     <div class="card-body" style="width: 500px; text-align: left;">
-       
+   
         <form action="/authcat_admin/search",  method="POST">
           <div class="form-group">
+         
           <div class="form-group">
             <label for="category">category:</label>
-            <input required="" class="form-control" name="category"  type="text" >
-          </div>
-          
-          <center><input type="submit" class="btn_3" value="submit">  </center>  
-      </form>
-    </div>
-  </div>
+            <select name="category">
+              {% for t in category %}
+              <option value="{{t.category}}">{{ t.category}}</option>
+              {% endfor %}
+            </select>
+           
+           <br> <br>
+         <input type="submit" class="btn_3" value="submit">   
+          </form>
+        </div>
+      </div>
          
     
       {% if searched %}

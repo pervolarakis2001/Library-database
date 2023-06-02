@@ -19,8 +19,9 @@
                             <th>borrowing date</th>
                             <th>Due date</th>
                             <th>return date</th>
-                             <th></th> 
-                            <th></th>
+                         
+                             
+                            
                         </tr>
                     </thead>
                     <tbody>
@@ -32,10 +33,14 @@
                             <td> {{ r.borrowing_date }} </td>
                             <td> {{ r.due_date}} </td>
                             <td> {{ r.return_date}} </td>
+                         
+                           
                             <td>
-                           <td>
-                          
-                            </td>
+                                <form action="/return_book" method="POST">
+                                    <input type="hidden" name="borrowed_id" value="{{r.borrowed_id}}">
+                                       <button style="border:0"><i class="fa-solid fa-rotate-left"></i></button>                       
+                                    </form>
+                                    </td>
                         </tr>
                      
                         {%endfor%}

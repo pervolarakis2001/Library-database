@@ -7,6 +7,8 @@ from Website.model import *
 import subprocess
 from datetime import date
 import subprocess
+import os
+import urllib.parse
 
 @app.route("/")
 def index():
@@ -695,10 +697,19 @@ def operator_book_change():
 
 @app.route('/backup', methods=['GET','POST'])
 def backup():
+    cursor = db.connection.cursor()
     try:
-        command = f"mysqldump -u root -p 1532001 --databases library > backup.sql"
-        subprocess.run(command, shell=True)
-        flash('backup of database created',category='success')
+        backup_dir = 'C:/backup'
+
+        # Backup file name
+        backup_file = 'library_backup_' + '.sql'
+
+        # Backup command
+        backup_command = f'mysqldump -u root -p1532001 library > {os.path.join(backup_dir, backup_file)}'
+
+        # Execute the backup command
+        subprocess.run(backup_command, shell=True, check=True)
+
     except Exception as e:
             error_message = str(e)
             return render_template('error.html', error_message=error_message)
@@ -711,11 +722,16 @@ def backup():
 def restore():
     cursor = db.connection.cursor()
   
-    d_b = 'library'
-    backup_dbname = d_b + '_backup'
+    backup_dir = 'C:/backup'
+
+    # Backup file name
+    backup_file = 'library_backup.sql'
     try:
-        command = f"mysql -u root -p --database library < backup.sql"
-        subprocess.run(command, shell=True)
+        # Restore command
+        restore_command = f'mysql -u root -p1532001 library < "{os.path.join(backup_dir, backup_file)}"'
+
+            # Execute the restore command
+        subprocess.run(restore_command, shell=True, check=True)
         flash('Restore Successful', category='success')
     except Exception as e:
         flash('Restore Failed', category='error')
@@ -728,7 +744,37 @@ def restore():
 
 @app.route("/school_users",methods=['GET','POST'])
 def school_users():
-    return render_template("school_users.html")
+    cur = db.connection.cursor()
+    query = f"""
+    SELECT DISTINCT  title from books b  inner join operator op on op.operator_id = b.operator_id inner join school_users s on s.operator_id=b.operator_id 
+    WHERE s.school_users_id ={session.get('user_id')}
+    """
+    cur.execute(query)
+    #name ='{session.get('school')}'
+    column_names = [i[0] for i in cur.description]
+    title = [dict(zip(column_names, entry)) for entry in cur.fetchall()]
+  
+    
+    query = f"""
+        SELECT DISTINCT  author from author_table C inner join books  b on b.ISBN=C.ISBN inner join operator op on op.operator_id = b.operator_id inner join school_users s on s.operator_id=b.operator_id 
+    WHERE s.school_users_id ={session.get('user_id')}
+        """
+    cur.execute(query)
+    #name ='{session.get('school')}'
+    column_names = [i[0] for i in cur.description]
+    authors = [dict(zip(column_names, entry)) for entry in cur.fetchall()]
+    
+    query = f"""
+        SELECT DISTINCT  category from category_table C inner join books  b on b.ISBN=C.ISBN inner join operator op on op.operator_id = b.operator_id inner join school_users s on s.operator_id=b.operator_id 
+    WHERE s.school_users_id ={session.get('user_id')}
+        """
+    cur.execute(query)
+    #name ='{session.get('school')}'
+    column_names = [i[0] for i in cur.description]
+    category = [dict(zip(column_names, entry)) for entry in cur.fetchall()]
+    
+   
+    return render_template("school_users.html",category= category,title=title, authors=authors)
 
 @app.route("/sch_user_profile",methods=['GET','POST'])
 def sch_user_profile():
@@ -740,6 +786,7 @@ def sch_user_profile():
         email = session.get('email')
         school = session.get('school')
         phone = session.get('phone')
+        
         query = f"""
             select * from  user_security where user_id = {session.get('user_id')}
             """
@@ -749,7 +796,7 @@ def sch_user_profile():
         security = [dict(zip(column_names, entry)) for entry in cur.fetchall()]
             
         if session.get('status') ==  "student":
-            return render_template("student_prof.html",session=session,security= security)
+            return redirect("student_prof.html",session=session,security=security)
         else:
             return render_template("teacher_prof.html",session=session,security= security)
             
@@ -851,10 +898,41 @@ def change_profile():
 @app.route("/find_book_user",methods=['GET','POST'])
 def find_book_user():
        cur = db.connection.cursor()
-       if(request.method == "POST"):           
+       
+       if(request.method == "POST"):  
+            query = f"""
+            SELECT DISTINCT  title from books b  inner join operator op on op.operator_id = b.operator_id inner join school_users s on s.operator_id=b.operator_id 
+            WHERE s.school_users_id ={session.get('user_id')}
+            """
+            cur.execute(query)
+            #name ='{session.get('school')}'
+            column_names = [i[0] for i in cur.description]
+            title_ = [dict(zip(column_names, entry)) for entry in cur.fetchall()]
+        
+            
+            query = f"""
+                SELECT DISTINCT  author from author_table C inner join books  b on b.ISBN=C.ISBN inner join operator op on op.operator_id = b.operator_id inner join school_users s on s.operator_id=b.operator_id 
+            WHERE s.school_users_id ={session.get('user_id')}
+                """
+            cur.execute(query)
+            #name ='{session.get('school')}'
+            column_names = [i[0] for i in cur.description]
+            authors_ = [dict(zip(column_names, entry)) for entry in cur.fetchall()]
+            
+            query = f"""
+                SELECT DISTINCT  category from category_table C inner join books  b on b.ISBN=C.ISBN inner join operator op on op.operator_id = b.operator_id inner join school_users s on s.operator_id=b.operator_id 
+            WHERE s.school_users_id ={session.get('user_id')}
+                """
+            cur.execute(query)
+            #name ='{session.get('school')}'
+            column_names = [i[0] for i in cur.description]
+            category_ = [dict(zip(column_names, entry)) for entry in cur.fetchall()]   
+
+            #################################################################################      
             title = request.form.get('title')
             category = request.form.get('category')
             author = request.form.get('author')
+            
             query = f"""
             SELECT b.isbn,b.title,b.publisher, b.num_of_pages, b.avail_copies, b.language, a.author, c.category FROM books b  inner join author_table a on a.ISBN = b.ISBN inner join school sch on sch.school_id = b.school_id 
             inner join category_table c on c.ISBN= b.ISBN 
@@ -868,8 +946,9 @@ def find_book_user():
             if cur.fetchall()  == None:
                 flash("book not found",category="error")
             else:
-                return render_template("school_users.html",books = books,searched = True)
+                return render_template("school_users.html", books=books, searched=True,category=category_,authors=authors_,title=title_)
             cur.close()
+       
        return render_template("school_users.html")
 
     
@@ -964,7 +1043,14 @@ def rate_book():
 @app.route("/rating/request",methods=['GET','POST'])
 def rate_request(): 
     cur = db.connection.cursor()
+    query = f"""
+        SELECT DISTINCT  category from category_table 
     
+            """
+    cur.execute(query)
+    #name ='{session.get('school')}'
+    column_names = [i[0] for i in cur.description]
+    category_ = [dict(zip(column_names, entry)) for entry in cur.fetchall()]
     query = f"""
             SELECT  ISBN,school_users_id,comments FROM ratings WHERE operator_id={session.get('user_id')} AND approved=FALSE
             """
@@ -972,7 +1058,7 @@ def rate_request():
     column_names = [i[0] for i in cur.description]
     inf_rat = [dict(zip(column_names, entry)) for entry in cur.fetchall()]
     
-    return  render_template("rating_request.html",inf_rat=inf_rat)
+    return  render_template("rating_request.html",inf_rat=inf_rat,category=category_)
 
 @app.route("/publish_rating",methods=['GET','POST'])
 def publish_request(): 
@@ -1187,19 +1273,23 @@ def late_returns():
         FirstName = request.form.get('FirstName')
         LastName = request.form.get('LastName')
         late_days = request.form.get('late_days')
+        print(late_days)
+        print(FirstName)
+        print(LastName)
+        print(operator_id)
         query = f"""
                 SELECT * FROM borrowings b INNER JOIN users u on  u.user_id =b.school_users_id   where return_date is NULL AND b.operator_id={operator_id}
-                AND u.First_name='{FirstName }' and  u.Last_name='{LastName}' AND DATEDIFF(curdate(),b.due_date) = '{late_days}'
+                AND u.First_name='{FirstName}' and  u.Last_name='{LastName}' AND DATEDIFF(curdate(),b.due_date) = {late_days}
                 """
         cur.execute(query)
         column_names = [i[0] for i in cur.description]
         reserve = [dict(zip(column_names, entry)) for entry in cur.fetchall()]
-        if cur.fetchall()  == None:
-                flash("book not found",category="error")
-               
-               
-        else:
-            return  render_template("late_returns.html",reserve=reserve,searched=True)
+        print(cur.fetchall())
+       
+        return  render_template("late_returns.html",reserve=reserve,searched=True)
+              
+        
+           
 
     return  render_template("late_returns.html")
 
@@ -1272,28 +1362,42 @@ def find_book_operator():
 @app.route("/find_rating_op",methods=['GET','POST'])
 def find_rating_operator():
        cur = db.connection.cursor()
-       if(request.method == "POST"):           
-            sch_user_id = request.form.get('user_id')
-            category = request.form.get('category')
-            print(sch_user_id)
-            query = f"""
-          select avg(rating_score) as score,r.school_users_id,category from ratings r INNER JOIN category_table c  on c.Isbn = r.ISBN inner join borrowings bor 
-            on bor.school_users_id =  r.school_users_id inner join books b on b.ISBN=r.ISBN inner join operator op on op.operator_id =b.operator_id   WHERE 
-             r.school_users_id = {sch_user_id} and c.category = '{category}' and op.operator_id = {session.get('user_id')}   group by r.school_users_id , c.category
-             
-             
-             """
-            cur.execute(query)
-            column_names = [i[0] for i in cur.description]
-            books = [dict(zip(column_names, entry)) for entry in cur.fetchall()]
-            print(books)
-            cur.close()
-            if cur.fetchall()  == None:
-                flash("This user has not rate this category",category="error")
-            else:
-                return  render_template("rating_request.html",books= books,searched=True)           
-               
-       return  render_template("rating_request.html",books= books,searched=True)
+       if(request.method == "POST"):   
+            try:        
+                sch_user_id = request.form.get('user_id')
+                category = request.form.get('category')
+                query = f"""
+                        SELECT DISTINCT  category from category_table 
+                
+                        """
+                cur.execute(query)
+            
+                column_names = [i[0] for i in cur.description]
+                category_ = [dict(zip(column_names, entry)) for entry in cur.fetchall()]
+                query = f"""
+                select avg(rating_score) as score,r.school_users_id,category from ratings r INNER JOIN category_table c  on c.Isbn = r.ISBN inner join borrowings bor 
+                on bor.school_users_id =  r.school_users_id inner join books b on b.ISBN=r.ISBN inner join operator op on op.operator_id =b.operator_id   WHERE 
+                r.school_users_id = {sch_user_id} and c.category = '{category}' and op.operator_id = {session.get('user_id')}   group by r.school_users_id , c.category
+                
+                
+                """
+                cur.execute(query)
+                column_names = [i[0] for i in cur.description]
+                books = [dict(zip(column_names, entry)) for entry in cur.fetchall()]
+                query = f"""
+                SELECT  ISBN,school_users_id,comments FROM ratings WHERE operator_id={session.get('user_id')} AND approved=FALSE
+                """
+                cur.execute(query) 
+                column_names = [i[0] for i in cur.description]
+                inf_rat = [dict(zip(column_names, entry)) for entry in cur.fetchall()]
+                print(inf_rat)
+                cur.close()
+            
+                return  render_template("rating_request.html",books= books,searched=True,category=category_,inf_rat=inf_rat)           
+            except Exception as e:
+                error_message = "USER_ID MUST BE A NUMBER !!!"
+                return render_template('error.html', error_message=error_message)
+       return  render_template("rating_request.html",books= books,searched=True,category=category_,inf_rat=inf_rat)
 
 
 @app.route("/bor_admin",methods=['GET','POST'])
@@ -1323,15 +1427,31 @@ def bor_admin():
 
 @app.route("/auth_cat_adm",methods=['GET','POST'])
 def auth_cat_adm():
-        
-        return render_template('authcat_bor.html')
+        cur = db.connection.cursor()
+        query = f"""
+        SELECT DISTINCT  category from category_table 
+       
+            """
+        cur.execute(query)
+        #name ='{session.get('school')}'
+        column_names = [i[0] for i in cur.description]
+        category = [dict(zip(column_names, entry)) for entry in cur.fetchall()]
+        return render_template('authcat_bor.html',category=category)
 
 @app.route("/authcat_admin/search",methods=['GET','POST'])
 def auth_cat_adm_search():
         cur = db.connection.cursor()
         if(request.method == "POST"): 
             category = request.form.get('category')  
-            
+             
+            query = f"""
+            SELECT DISTINCT  category from category_table 
+        
+                """
+            cur.execute(query)
+            #name ='{session.get('school')}'
+            column_names = [i[0] for i in cur.description]
+            category_ = [dict(zip(column_names, entry)) for entry in cur.fetchall()]
             query = f"""
                         SELECT  category, us.First_name, us.Last_name FROM books b 
                         INNER JOIN category_table ct ON b.ISBN = ct.ISBN
@@ -1358,7 +1478,7 @@ def auth_cat_adm_search():
             column_names = [i[0] for i in cur.description]
             reserve_2 = [dict(zip(column_names, entry)) for entry in cur.fetchall()]
             
-        return  render_template("authcat_bor.html",reserve=reserve,reserve_2=reserve_2,searched=True)
+        return  render_template("authcat_bor.html",reserve=reserve,reserve_2=reserve_2,searched=True,category=category_)
 
 @app.route("/vew_young_teach",methods=['GET','POST'])
 def vew_young_teach_1():
@@ -1428,6 +1548,8 @@ def  top_categories():
                     inner join category_table ct1 on ct1.ISBN = b.ISBN 
                     cross join category_table ct2 on ct1.category <> ct2.category  AND ct1.category < ct2.category AND ct1.ISBN = ct2.ISBN
                     group by ct1.category,ct2.category
+                    ORDER BY
+                    COUNT(bor.borrowed_id) DESC
                     limit 3;
                     """
          cur.execute(query)
@@ -1441,17 +1563,17 @@ def  top_categories():
 def  auth_5_books():
          cur = db.connection.cursor()
          query = f"""
-                   with aut_five_less_max (author,count_of_books_per_author) as
-                    (select aut.author, count(b.ISBN) as count_of_books_per_author from books b 
-                    inner join author_table aut on aut.ISBN = b.ISBN 
-                    group by aut.author),
-                    most_books_author (max_books_author) as
-                    (select max(count_of_books_per_author) as max_books_author 
-                    from aut_five_less_max)
-                    select *
-                    from aut_five_less_max aflm
-                    join most_books_author mba 
-                    on mba.max_books_author - 5 > aflm.count_of_books_per_author;
+        with aut_five_less_max (author,count_of_books_per_author) as
+		(select aut.author, count(b.ISBN) as count_of_books_per_author from books b 
+		inner join author_table aut on aut.ISBN = b.ISBN 
+		group by aut.author),
+	 most_books_author (max_books_author) as
+		(select max(count_of_books_per_author) as max_books_author 
+        from aut_five_less_max)
+        select aflm.author, aflm.count_of_books_per_author
+        from aut_five_less_max aflm
+        join most_books_author mba 
+        on mba.max_books_author - 5 > aflm.count_of_books_per_author;
                     """
          cur.execute(query)
          column_names = [i[0] for i in cur.description]
@@ -1620,6 +1742,7 @@ def  vew_operator():
         inner join email_table us on us.user_id = u.user_id inner join school sc on op.operator_id = sc.operator_id where op.operator_id ={session.get('user_id')}
         """
         cur.execute(query)
+        print(session.get('user_id'))
         column_names = [i[0] for i in cur.description]
         info_op = [dict(zip(column_names, entry)) for entry in cur.fetchall()]
       
@@ -1764,3 +1887,21 @@ def desable_user():
          flash('user desabled',category='error')
          
     return redirect('/vew_memb')
+
+@app.route('/return_book', methods=['GET','POST'])
+def return_book():
+   
+    cur = db.connection.cursor()
+    if(request.method == "POST"):
+        borrowed_id= request.form['borrowed_id']
+        reservation_date = date.today()
+         
+        query = f"""
+                update borrowings set return_date ='{reservation_date}' where borrowed_id= {borrowed_id}
+                """
+        cur.execute(query)
+            
+        db.connection.commit()
+    return redirect('/operator/borrowings')
+
+

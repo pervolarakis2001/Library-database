@@ -4,7 +4,7 @@
 
 <h2>Average Ratings per borrower and category</h2>
 <center>
-    <div class="card-body" style="width: 500px; text-align: left;">
+    <div class="card-body" style="width: 500px; text-align: left; ">
        
         <form action="/find_rating_op",  method="POST">
           <div class="form-group">
@@ -16,8 +16,13 @@
           
           <div class="form-group">
             <label for="category">category:</label>
-            <input class="form-control" name="category" type="text">
-          </div>
+            <select name="category">
+              {% for t in category %}
+              <option value="{{t.category}}">{{ t.category}}</option>
+              {% endfor %}
+            </select>
+           
+           <br> <br>
           <center><input type="submit" class="btn_3" value="submit">  </center>  
           </form>
         </div>
@@ -27,7 +32,7 @@
     
       <div class="row" id="row" >            
         <div class="col-md-12" >     
-            <div class="card" id="card-container" style="width: 1300px; font-size: 15px;">
+            <div class="card" id="card-container" style="width: 500px; font-size: 15px;position: absolute; left: -50px;">
                 <div class="card-body" >
                     <table class="table table-striped table-sm table-borderless">
                         <thead>
@@ -54,15 +59,21 @@
             </div>
         </div>
        <br>
-        
+      
         <p></p>
     </div>
     </div>
-{% else %}
-<center><h2> <b>Requests:</b> </h2></center>
+   
+    <br>
+  <br>
+  {%endif%}
+  <br> <br> <br> <br> <br>
 {% if inf_rat%}
+
 <div class="row" id="row" >            
-    <div class="col-md-12" >     
+    <div class="col-md-12" >    
+        <center><h2> <b>Requests:</b> </h2></center> 
+       
         <div class="card" id="card-container">
             <div class="card-body">
                 <table class="table table-striped table-sm table-borderless"  id= "myTable" style="border-radius: 15px;" >
@@ -117,5 +128,5 @@
 {%else%}
 <h2>There are no requests</h2>
 {%endif%}
-{%endif%}
+
 {% endblock %}
