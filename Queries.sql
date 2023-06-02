@@ -75,7 +75,7 @@ with aut_five_less_max (author,count_of_books_per_author) as
 	 most_books_author (max_books_author) as
 		(select max(count_of_books_per_author) as max_books_author 
         from aut_five_less_max)
-select *
+select aflm.author, aflm.count_of_books_per_author
 from aut_five_less_max aflm
 join most_books_author mba 
 on mba.max_books_author - 5 > aflm.count_of_books_per_author;
