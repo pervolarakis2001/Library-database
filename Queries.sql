@@ -1,6 +1,6 @@
 
 -- 3.1.1 
- select sch.name as school, count(borrowed_id) as count from borrowings bor 
+select sch.name as school, count(borrowed_id) as count from borrowings bor 
                         INNER JOIN operator op ON bor.operator_id = op.operator_id 
                         INNER JOIN school sch ON  sch.operator_id = op.operator_id WHERE MONTH(borrowing_date) ='{month}' AND YEAR(borrowing_date) ='{year}'
                         GROUP BY sch.name;
