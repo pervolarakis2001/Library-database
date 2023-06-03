@@ -42,7 +42,7 @@ CREATE TRIGGER chk_borrowings BEFORE INSERT ON borrowings
 FOR EACH ROW 
 BEGIN 
 IF (new.school_users_id = (SELECT bor.school_users_id from borrowings bor INNER JOIN school_users s ON s.school_users_id = bor.school_users_id INNER JOIN books b ON  b.ISBN = bor.ISBN
-    WHERE s.status = "student"   and s.school_users_id=new.school_users_id   AND DATEDIFF(bor.borrowing_date,CURDATE()) <7 GROUP BY bor.school_users_id HAVING COUNT(*)= 2)  ) THEN 
+    WHERE s.status = "student"   and s.school_users_id=new.school_users_id   AND DATEDIFF(CURDATE(),bor.borrowing_date) <7 GROUP BY bor.school_users_id HAVING COUNT(*)= 2)  ) THEN 
       SIGNAL SQLSTATE '45000'
            SET MESSAGE_TEXT = 'check constraint on  borrowings failed - A student can only borrow 2 books a week.';
     END IF;
@@ -50,7 +50,7 @@ IF (new.school_users_id = (SELECT bor.school_users_id from borrowings bor INNER 
 
     
 IF (new.school_users_id = (SELECT bor.school_users_id from borrowings bor INNER JOIN school_users s ON s.school_users_id = bor.school_users_id INNER JOIN books b ON  b.ISBN = bor.ISBN
-    WHERE s.status = "teacher"  and s.school_users_id=new.school_users_id AND DATEDIFF(bor.borrowing_date,CURDATE()) <7  GROUP BY bor.school_users_id HAVING COUNT(*)= 1  ) )THEN 
+    WHERE s.status = "teacher"  and s.school_users_id=new.school_users_id AND DATEDIFF(CURDATE(),bor.borrowing_date) <7  GROUP BY bor.school_users_id HAVING COUNT(*)= 1  ) )THEN 
       SIGNAL SQLSTATE '45000'
            SET MESSAGE_TEXT = 'check constraint on  borrowings failed - A teacher can only borrow 1 book a week.';
     END IF;
