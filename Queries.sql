@@ -81,7 +81,9 @@ join most_books_author mba
 on mba.max_books_author - 5 > aflm.count_of_books_per_author;
 
 -- 3.2.1
-select title,author from books inner join author_table on books.ISBN = author_table.ISBN;
+SELECT b.isbn,b.title,b.publisher, b.num_of_pages, b.avail_copies, b.language, a.author, c.category FROM books b  inner join author_table a on a.ISBN = b.ISBN inner join school sch on sch.school_id = b.school_id 
+            inner join category_table c on c.ISBN= b.ISBN 
+            WHERE title ='{title}' AND category='{category}' AND author='{author}' AND avail_copies = {avail_copies} AND b.operator_id ={session.get('user_id')}
 
 -- 3.2.2 
 select * from borrowings;
