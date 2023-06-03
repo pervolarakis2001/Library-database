@@ -16,22 +16,22 @@ CREATE TRIGGER chk_num_of_reservations BEFORE INSERT ON reservations
 FOR EACH ROW 
 BEGIN 
 	IF (new.school_users_id = (SELECT r.school_users_id from reservations r INNER JOIN school_users s ON s.school_users_id = r.school_users_id INNER JOIN books b ON  b.ISBN = r.ISBN
-    WHERE s.status = "student" AND r.ISBN = new.ISBN  GROUP BY r.school_users_id HAVING COUNT(*)= 2) AND DATEDIFF(new.reservation_date,CURDATE()) <7 ) THEN 
+    WHERE s.status = "student" AND r.ISBN = new.ISBN  AND DATEDIFF(CURDATE(),r.reservation_date) <7 GROUP BY r.school_users_id HAVING COUNT(*)= 2) ) THEN 
       SIGNAL SQLSTATE '45000'
            SET MESSAGE_TEXT = 'check constraint on reservations failed - A student can only make 2 reservations a week.';
     END IF;
     IF (new.school_users_id = (SELECT r.school_users_id from reservations r INNER JOIN school_users s ON s.school_users_id = r.school_users_id INNER JOIN books b ON  b.ISBN = r.ISBN
-    WHERE s.status = "teacher" AND r.ISBN = new.ISBN  GROUP BY r.school_users_id HAVING COUNT(*)= 1) AND DATEDIFF(new.reservation_date,CURDATE()) <=7)  THEN 
+    WHERE s.status = "teacher" AND r.ISBN = new.ISBN  AND DATEDIFF(CURDATE(),r.reservation_date) <7 GROUP BY r.school_users_id HAVING COUNT(*)= 1))  THEN 
       SIGNAL SQLSTATE '45000'
            SET MESSAGE_TEXT = 'check constraint on reservations failed - A teacher can only make 1 reservations a week.';
     END IF;
- IF(new.school_users_id = (select school_users_id from borrowings WHERE (return_date IS NULL AND  datediff(CURDATE(),due_date)>1)  ) )  THEN 
+ IF(new.school_users_id = (select school_users_id from borrowings WHERE return_date IS NULL AND  datediff(CURDATE(),due_date)>=1 ) )  THEN 
  SIGNAL SQLSTATE '45000'
            SET MESSAGE_TEXT = 'check constraint on reservations failed - A user cannot make reservation if a book has not been returned on time.';
     END IF;
 IF (new.ISBN = (SELECT ISBN FROM borrowings   WHERE school_users_id =  new.school_users_id  AND return_date is null AND ISBN=new.ISBN) ) THEN 
 	SIGNAL SQLSTATE '45000'
-           SET MESSAGE_TEXT = 'check constraint on reservations failed - A user cannot make reservation if   the same user has already borrowed the title.';
+           SET MESSAGE_TEXT = 'check constraint on reservations failed - A user cannot make reservation if  the same user has already borrowed the title.';
     END IF;
 END$  
 DELIMITER ; 
@@ -55,7 +55,7 @@ IF (new.school_users_id = (SELECT bor.school_users_id from borrowings bor INNER 
            SET MESSAGE_TEXT = 'check constraint on  borrowings failed - A teacher can only borrow 1 book a week.';
     END IF;
     
-IF (new.school_users_id = (SELECT school_users_id from borrowings WHERE return_date is null AND ISBN = new.ISBN) AND DATEDIFF(new.borrowing_date,CURDATE()) > 7 ) THEN
+IF (new.school_users_id = (SELECT school_users_id from borrowings WHERE new.school_users_id =school_users_id and  (return_date is null  OR  DATEDIFF(CURDATE(),due_date) > 7)) ) THEN
 	 SIGNAL SQLSTATE '45000'
            SET MESSAGE_TEXT = 'check constraint on  borrowings failed - A user cannot borrow a book  if returns are delayed or still open.';
 	 END IF;
@@ -92,6 +92,5 @@ BEGIN
 
 END$ 
 DELIMITER ; 
-
 
 
