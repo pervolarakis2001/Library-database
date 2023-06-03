@@ -86,21 +86,18 @@ SELECT b.isbn,b.title,b.publisher, b.num_of_pages, b.avail_copies, b.language, a
             WHERE title ='{title}' AND category='{category}' AND author='{author}' AND avail_copies = {avail_copies} AND b.operator_id ={session.get('user_id')}
 
 -- 3.2.2 
-select * from borrowings;
-select bor.school_users_id, us.First_name, us.Last_name from users us
-inner join borrowings bor on bor.school_users_id = us.user_id
-where due_date < curdate() and return_date is null
-having count(bor.borrowed_id) > 1;
+ SELECT * FROM borrowings b INNER JOIN users u on  u.user_id =b.school_users_id   where return_date is NULL AND b.operator_id={operator_id}
+                AND u.First_name='{FirstName}' and  u.Last_name='{LastName}' AND DATEDIFF(curdate(),b.due_date) = {late_days}
 
-
-select avg(rating_score) as score,school_users_id,category from ratings r INNER JOIN category_table c  on c.Isbn = r.ISBN WHERE 
-             r.school_users_id = {sch_user_id} and c.category = '{category}'
+-- 3.2.3
+select avg(rating_score) as score,r.school_users_id,category from ratings r INNER JOIN category_table c  on c.Isbn = r.ISBN inner join borrowings bor 
+                on bor.school_users_id =  r.school_users_id inner join books b on b.ISBN=r.ISBN inner join operator op on op.operator_id =b.operator_id   WHERE 
+                r.school_users_id = {sch_user_id} and c.category = '{category}' and op.operator_id = {session.get('user_id')}   group by r.school_users_id , c.category
 
 -- 3.3.1
-
+SELECT b.isbn,b.title,b.publisher, b.num_of_pages, b.avail_copies, b.language, a.author, c.category FROM books b  inner join author_table a on a.ISBN = b.ISBN inner join school sch on sch.school_id = b.school_id 
+            inner join category_table c on c.ISBN= b.ISBN 
+            WHERE title ='{title}' AND category='{category}' AND author='{author}' 
 -- 3.3.2
-select bor.school_users_id, us.First_name, us.Last_name, b.ISBN, b.title from borrowings bor 
-inner join books b on b.ISBN = bor.ISBN
-inner join users us on us.user_id = bor.school_users_id
-group by bor.school_users_id; 
+  SELECT * FROM borrowings WHERE school_users_id={session.get('user_id')}
 -- vasi toy parapanw tha psaxnei kai kala o mathitis stin kartela mesw tou student id tou h tou onomatepwnymou tou
