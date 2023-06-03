@@ -7,8 +7,8 @@ from Website.model import *
 import subprocess
 from datetime import date
 import subprocess
-import os
-import urllib.parse
+import os 
+import shutil
 
 @app.route("/")
 def index():
@@ -695,51 +695,308 @@ def operator_book_change():
         return redirect('/operator/books')
     return render_template("change_book.html")
 
-@app.route('/backup', methods=['GET','POST'])
+import os
+import shutil
+
+@app.route('/backup', methods=['GET', 'POST'])
 def backup():
     cursor = db.connection.cursor()
+    
+    db_ = 'library'
+    
+    # Getting all the table names
+    table_names = ['users','admin','operator', 'school','school_users','books','borrowings','reservations'
+                   ,'phone_table','ratings','email_table','category_table','author_table']
+
+    backup_dbname = db_ + '_backup'
     try:
-        backup_dir = 'C:/backup'
+        cursor.execute(f'CREATE DATABASE {backup_dbname}')
+    except:
+        pass
 
-        # Backup file name
-        backup_file = 'library_backup_' + '.sql'
+    cursor.execute(f'USE {backup_dbname}')
 
-        # Backup command
-        backup_command = f'mysqldump -u root -p1532001 library > {os.path.join(backup_dir, backup_file)}'
+    for table_name in table_names:
+        # Create table with triggers, primary keys, and foreign keys
+        cursor.execute(f'SHOW CREATE TABLE {db_}.{table_name}')
+        create_table_query = cursor.fetchone()[1]
+        create_table_query = create_table_query.replace(db_, backup_dbname)
+        cursor.execute(create_table_query)
+        cursor.execute(f"SHOW TRIGGERS FROM library LIKE '{table_name}';")
+        triggers = cursor.fetchall()
 
-        # Execute the backup command
-        subprocess.run(backup_command, shell=True, check=True)
+        
+        # Insert data into the backup table
+        cursor.execute(f'INSERT INTO {backup_dbname}.{table_name} SELECT * FROM {db_}.{table_name}')
+    query1 = """
+    -- Setting event to delete reservations after one week 
+    CREATE EVENT IF NOT EXISTS delete_reservations_event
+    ON SCHEDULE
+    EVERY 1 DAY_HOUR 
+    ON COMPLETION PRESERVE
+    COMMENT 'Clean up reservations.'
+    DO
+        DELETE FROM reservations
+        WHERE reservation_date < DATE_SUB(NOW(), INTERVAL 7 DAY)
+"""
 
-    except Exception as e:
-            error_message = str(e)
-            return render_template('error.html', error_message=error_message)
+    query2 = """
+    CREATE TRIGGER chk_num_of_reservations BEFORE INSERT ON reservations
+        FOR EACH ROW 
+        BEGIN 
+            IF (new.school_users_id = (SELECT r.school_users_id from reservations r INNER JOIN school_users s ON s.school_users_id = r.school_users_id INNER JOIN books b ON  b.ISBN = r.ISBN
+            WHERE s.status = "student" AND r.ISBN = new.ISBN  GROUP BY r.school_users_id HAVING COUNT(*)= 2) AND DATEDIFF(new.reservation_date,CURDATE()) <7 ) THEN 
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'check constraint on reservations failed - A student can only make 2 reservations a week.';
+            END IF;
+            IF (new.school_users_id = (SELECT r.school_users_id from reservations r INNER JOIN school_users s ON s.school_users_id = r.school_users_id INNER JOIN books b ON  b.ISBN = r.ISBN
+            WHERE s.status = "teacher" AND r.ISBN = new.ISBN  GROUP BY r.school_users_id HAVING COUNT(*)= 1) AND DATEDIFF(new.reservation_date,CURDATE()) <=7)  THEN 
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'check constraint on reservations failed - A teacher can only make 1 reservations a week.' ;
+            END IF;
+            IF(new.school_users_id = (select school_users_id from borrowings WHERE (return_date IS NULL AND  datediff(CURDATE(),due_date)>1)  ) )  THEN 
+            SIGNAL SQLSTATE '45000'
+                    SET MESSAGE_TEXT = 'check constraint on reservations failed - A user cannot make reservation if a book has not been returned on time.';
+                END IF;
+            IF (new.ISBN = (SELECT ISBN FROM borrowings   WHERE school_users_id =  new.school_users_id  AND return_date is null AND ISBN=new.ISBN) ) THEN 
+                SIGNAL SQLSTATE '45000'
+                    SET MESSAGE_TEXT = 'check constraint on reservations failed - A user cannot make reservation if   the same user has already borrowed the title.';
+                END IF;
+        END 
+
+"""
+
+    query3= """
+       CREATE TRIGGER chk_borrowings BEFORE INSERT ON borrowings
+        FOR EACH ROW 
+        BEGIN 
+        IF (new.school_users_id = (SELECT bor.school_users_id from borrowings bor INNER JOIN school_users s ON s.school_users_id = bor.school_users_id INNER JOIN books b ON  b.ISBN = bor.ISBN
+            WHERE s.status = "student"   and s.school_users_id=new.school_users_id   AND DATEDIFF(bor.borrowing_date,CURDATE()) <7 GROUP BY bor.school_users_id HAVING COUNT(*)= 2)  ) THEN 
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'check constraint on  borrowings failed - A student can only borrow 2 books a week.';
+            END IF;
+
+
+            
+        IF (new.school_users_id = (SELECT bor.school_users_id from borrowings bor INNER JOIN school_users s ON s.school_users_id = bor.school_users_id INNER JOIN books b ON  b.ISBN = bor.ISBN
+            WHERE s.status = "teacher"  and s.school_users_id=new.school_users_id AND DATEDIFF(bor.borrowing_date,CURDATE()) <7  GROUP BY bor.school_users_id HAVING COUNT(*)= 1  ) )THEN 
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'check constraint on  borrowings failed - A teacher can only borrow 1 book a week.';
+            END IF;
+            
+        IF (new.school_users_id = (SELECT school_users_id from borrowings WHERE return_date is null AND ISBN = new.ISBN) AND DATEDIFF(new.borrowing_date,CURDATE()) > 7 ) THEN
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'check constraint on  borrowings failed - A user cannot borrow a book  if returns are delayed or still open.';
+            END IF;
+            
+        IF (new.ISBN = (SELECT ISBN FROM books WHERE avail_copies = 0 AND ISBN = new.ISBN)) THEN
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'check constraint on  borrowings failed - A user cannot borrow a book  if there is no  available copie of book.';
+            END IF;
+        END
+    """
+    query4 = """
+            CREATE TRIGGER decrease_avail_copies AFTER INSERT ON borrowings
+            FOR EACH ROW 
+            BEGIN 
+                IF (new.return_date IS NULL) THEN 
+                    UPDATE books b SET b.avail_copies = b.avail_copies -1 WHERE ISBN = NEW.ISBN;
+                ELSEIF (new.return_date IS NOT NULL) THEN 
+                    UPDATE books b SET b.avail_copies = b.avail_copies +1 WHERE ISBN = NEW.ISBN;
+                END IF;
+
+            END
+    """
+    query5 = """
+            CREATE TRIGGER chk_due_date  BEFORE INSERT ON borrowings
+            FOR EACH ROW 
+            BEGIN 
+                IF (new.return_date IS NULL) THEN 
+                    SET NEW.due_date = date_add(new.borrowing_date,INTERVAL 7 DAY);	
+                END IF;
+
+            END
+    """
+
+    cursor.execute(query1)
+    cursor.execute(query2)
+    cursor.execute(query3)
+    cursor.execute(query4)
+    cursor.execute(query5)
+
+
+    query = f"""
+        create view user_security as 
+		select
+         u.user_id, 
+         concat(substr(email,1,2), '*****', substr(email, -4)) email,
+         concat('*****') password,
+           concat('*****') username,
+        concat(substr(phone_number,1,2), '*****', substr(phone_number, -2)) phone_number
+        from users u inner join email_table e on e.user_id=u.user_id inner join phone_table p on p.user_id = u.user_id
+
+        """
+    cursor.execute(query)
+
+   
+    
+    flash('Backup of database created', category='success')
     return redirect('/admin')
 
 
-
-
-@app.route('/restore', methods=['GET','POST'])
+@app.route('/restore', methods=['GET', 'POST'])
 def restore():
     cursor = db.connection.cursor()
-  
-    backup_dir = 'C:/backup'
+    
+    backup_db_name = 'library_backup'
+    target_db_name = 'library'
 
-    # Backup file name
-    backup_file = 'library_backup.sql'
-    try:
-        # Restore command
-        restore_command = f'mysql -u root -p1532001 library < "{os.path.join(backup_dir, backup_file)}"'
+    # Drop the target database if it exists
+    cursor.execute(f"DROP DATABASE IF EXISTS {target_db_name}")
 
-            # Execute the restore command
-        subprocess.run(restore_command, shell=True, check=True)
-        flash('Restore Successful', category='success')
-    except Exception as e:
-        flash('Restore Failed', category='error')
-        print(e)
-    finally:
-        cursor.close()
+    # Create the target database
+    cursor.execute(f"CREATE DATABASE {target_db_name}")
+
+    # Use the target database
+    cursor.execute(f"USE {target_db_name}")
+    
+    # Getting all the table names
+    table_names = ['users','admin','operator', 'school','school_users','books','borrowings','reservations'
+                   ,'phone_table','ratings','email_table','category_table','author_table']
+
+    
+    
+
+   
+
+    for table_name in table_names:
+        # Create table with triggers, primary keys, and foreign keys
+        cursor.execute(f'SHOW CREATE TABLE {backup_db_name}.{table_name}')
+        create_table_query = cursor.fetchone()[1]
+        create_table_query = create_table_query.replace(backup_db_name, target_db_name)
+        cursor.execute(create_table_query)
+        cursor.execute(f"SHOW TRIGGERS FROM library_backup LIKE '{table_name}';")
+        triggers = cursor.fetchall()
+
         
-    flash('Restore Successful',category="success")
+        # Insert data into the backup table
+        cursor.execute(f'INSERT INTO { target_db_name}.{table_name} SELECT * FROM {backup_db_name}.{table_name}')
+    query1 = """
+    -- Setting event to delete reservations after one week 
+    CREATE EVENT IF NOT EXISTS delete_reservations_event
+    ON SCHEDULE
+    EVERY 1 DAY_HOUR 
+    ON COMPLETION PRESERVE
+    COMMENT 'Clean up reservations.'
+    DO
+        DELETE FROM reservations
+        WHERE reservation_date < DATE_SUB(NOW(), INTERVAL 7 DAY)
+"""
+
+    query2 = """
+    CREATE TRIGGER chk_num_of_reservations BEFORE INSERT ON reservations
+        FOR EACH ROW 
+        BEGIN 
+            IF (new.school_users_id = (SELECT r.school_users_id from reservations r INNER JOIN school_users s ON s.school_users_id = r.school_users_id INNER JOIN books b ON  b.ISBN = r.ISBN
+            WHERE s.status = "student" AND r.ISBN = new.ISBN  GROUP BY r.school_users_id HAVING COUNT(*)= 2) AND DATEDIFF(new.reservation_date,CURDATE()) <7 ) THEN 
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'check constraint on reservations failed - A student can only make 2 reservations a week.';
+            END IF;
+            IF (new.school_users_id = (SELECT r.school_users_id from reservations r INNER JOIN school_users s ON s.school_users_id = r.school_users_id INNER JOIN books b ON  b.ISBN = r.ISBN
+            WHERE s.status = "teacher" AND r.ISBN = new.ISBN  GROUP BY r.school_users_id HAVING COUNT(*)= 1) AND DATEDIFF(new.reservation_date,CURDATE()) <=7)  THEN 
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'check constraint on reservations failed - A teacher can only make 1 reservations a week.' ;
+            END IF;
+            IF(new.school_users_id = (select school_users_id from borrowings WHERE (return_date IS NULL AND  datediff(CURDATE(),due_date)>1)  ) )  THEN 
+            SIGNAL SQLSTATE '45000'
+                    SET MESSAGE_TEXT = 'check constraint on reservations failed - A user cannot make reservation if a book has not been returned on time.';
+                END IF;
+            IF (new.ISBN = (SELECT ISBN FROM borrowings   WHERE school_users_id =  new.school_users_id  AND return_date is null AND ISBN=new.ISBN) ) THEN 
+                SIGNAL SQLSTATE '45000'
+                    SET MESSAGE_TEXT = 'check constraint on reservations failed - A user cannot make reservation if   the same user has already borrowed the title.';
+                END IF;
+        END 
+
+"""
+
+    query3= """
+       CREATE TRIGGER chk_borrowings BEFORE INSERT ON borrowings
+        FOR EACH ROW 
+        BEGIN 
+        IF (new.school_users_id = (SELECT bor.school_users_id from borrowings bor INNER JOIN school_users s ON s.school_users_id = bor.school_users_id INNER JOIN books b ON  b.ISBN = bor.ISBN
+            WHERE s.status = "student"   and s.school_users_id=new.school_users_id   AND DATEDIFF(bor.borrowing_date,CURDATE()) <7 GROUP BY bor.school_users_id HAVING COUNT(*)= 2)  ) THEN 
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'check constraint on  borrowings failed - A student can only borrow 2 books a week.';
+            END IF;
+
+
+            
+        IF (new.school_users_id = (SELECT bor.school_users_id from borrowings bor INNER JOIN school_users s ON s.school_users_id = bor.school_users_id INNER JOIN books b ON  b.ISBN = bor.ISBN
+            WHERE s.status = "teacher"  and s.school_users_id=new.school_users_id AND DATEDIFF(bor.borrowing_date,CURDATE()) <7  GROUP BY bor.school_users_id HAVING COUNT(*)= 1  ) )THEN 
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'check constraint on  borrowings failed - A teacher can only borrow 1 book a week.';
+            END IF;
+            
+        IF (new.school_users_id = (SELECT school_users_id from borrowings WHERE return_date is null AND ISBN = new.ISBN) AND DATEDIFF(new.borrowing_date,CURDATE()) > 7 ) THEN
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'check constraint on  borrowings failed - A user cannot borrow a book  if returns are delayed or still open.';
+            END IF;
+            
+        IF (new.ISBN = (SELECT ISBN FROM books WHERE avail_copies = 0 AND ISBN = new.ISBN)) THEN
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'check constraint on  borrowings failed - A user cannot borrow a book  if there is no  available copie of book.';
+            END IF;
+        END
+    """
+    query4 = """
+            CREATE TRIGGER decrease_avail_copies AFTER INSERT ON borrowings
+            FOR EACH ROW 
+            BEGIN 
+                IF (new.return_date IS NULL) THEN 
+                    UPDATE books b SET b.avail_copies = b.avail_copies -1 WHERE ISBN = NEW.ISBN;
+                ELSEIF (new.return_date IS NOT NULL) THEN 
+                    UPDATE books b SET b.avail_copies = b.avail_copies +1 WHERE ISBN = NEW.ISBN;
+                END IF;
+
+            END
+    """
+    query5 = """
+            CREATE TRIGGER chk_due_date  BEFORE INSERT ON borrowings
+            FOR EACH ROW 
+            BEGIN 
+                IF (new.return_date IS NULL) THEN 
+                    SET NEW.due_date = date_add(new.borrowing_date,INTERVAL 7 DAY);	
+                END IF;
+
+            END
+    """
+
+    cursor.execute(query1)
+    cursor.execute(query2)
+    cursor.execute(query3)
+    cursor.execute(query4)
+    cursor.execute(query5)
+
+
+    query = f"""
+        create view user_security as 
+		select
+         u.user_id, 
+         concat(substr(email,1,2), '*****', substr(email, -4)) email,
+         concat('*****') password,
+           concat('*****') username,
+        concat(substr(phone_number,1,2), '*****', substr(phone_number, -2)) phone_number
+        from users u inner join email_table e on e.user_id=u.user_id inner join phone_table p on p.user_id = u.user_id
+
+        """
+    cursor.execute(query)
+
+    query=f"drop database library_backup"
+    cursor.execute(query)
+
+   
+    
+    flash('database restored', category='success')
     return redirect('/admin')
 
 @app.route("/school_users",methods=['GET','POST'])
