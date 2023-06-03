@@ -1,5 +1,3 @@
-
--- drop database library;
 -- -----------------------------------------------------
 -- Table "users"
 -- -----------------------------------------------------
@@ -124,22 +122,6 @@ CREATE TABLE IF NOT EXISTS books (
 	
 )ENGINE = InnoDB;
 
-/*
--- -----------------------------------------------------
--- Table "authentification_system"
--- -----------------------------------------------------
-create table IF NOT EXISTS  authentication_system(
-	login_id INT UNSIGNED NOT NULL,
-	user_id INT UNSIGNED NOT NULL,
-	username VARCHAR(20) NOT NULL,
-	password  VARCHAR(20) NOT NULL,
-	PRIMARY KEY (login_id),
-	CONSTRAINT fk_users_auths_system
-	FOREIGN KEY (user_id) REFERENCES users (user_id)
-	ON DELETE RESTRICT
-	ON UPDATE CASCADE
-)ENGINE = InnoDB;
-*/
 -- -----------------------------------------------------
 -- Table "borrowings"
 -- -----------------------------------------------------
