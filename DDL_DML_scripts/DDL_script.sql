@@ -295,7 +295,7 @@ BEGIN
       SIGNAL SQLSTATE '45000'
            SET MESSAGE_TEXT = 'check constraint on reservations failed - A teacher can only make 1 reservations a week.';
     END IF;
- IF(new.school_users_id = (select school_users_id from borrowings WHERE  datediff(return_date,due_date)>=1 ) )  THEN 
+ IF(new.school_users_id = (select school_users_id from borrowings WHERE school_users_id=new.school_users_id AND  datediff(return_date,due_date)>=1 ) )  THEN 
  SIGNAL SQLSTATE '45000'
            SET MESSAGE_TEXT = 'check constraint on reservations failed - A user cannot make reservation if a book has not been returned on time.';
     END IF;
