@@ -374,12 +374,14 @@ CREATE UNIQUE INDEX idx_author ON author_table (author);
 
 CREATE UNIQUE INDEX idx_email ON email_table (email);
 
-CREATE UNIQUE INDEX idx_borrowing_date ON borrowings (borrowing_date);
+CREATE UNIQUE idx_borrowing_date ON borrowings (borrowing_date);
 
-CREATE UNIQUE INDEX idx_due_date ON borrowings (due_date);
+CREATE UNIQUE idx_due_date ON borrowings (due_date);
 
-CREATE UNIQUE INDEX idx_return_date ON borrowings (return_date);
+CREATE UNIQUE idx_return_date ON borrowings (return_date);
 
-CREATE UNIQUE INDEX idx_reservation_date ON reservations (reservation_date);
+CREATE UNIQUE idx_reservation_date ON reservations (reservation_date);
+
+CREATE UNIQUE idx_approval ON users (approved);
 
 
