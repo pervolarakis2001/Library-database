@@ -286,16 +286,16 @@ CREATE TRIGGER chk_num_of_reservations BEFORE INSERT ON reservations
 FOR EACH ROW 
 BEGIN 
 	IF (new.school_users_id = (SELECT r.school_users_id from reservations r INNER JOIN school_users s ON s.school_users_id = r.school_users_id INNER JOIN books b ON  b.ISBN = r.ISBN
-    WHERE s.status = "student" AND r.ISBN = new.ISBN  AND DATEDIFF(CURDATE(),r.reservation_date) <7 GROUP BY r.school_users_id HAVING COUNT(*)= 2) ) THEN 
+    WHERE s.status = "student" AND r.school_users_id = new.school_users_id  AND DATEDIFF(CURDATE(),r.reservation_date) <7 GROUP BY r.school_users_id HAVING COUNT(*)= 2) ) THEN 
       SIGNAL SQLSTATE '45000'
            SET MESSAGE_TEXT = 'check constraint on reservations failed - A student can only make 2 reservations a week.';
     END IF;
     IF (new.school_users_id = (SELECT r.school_users_id from reservations r INNER JOIN school_users s ON s.school_users_id = r.school_users_id INNER JOIN books b ON  b.ISBN = r.ISBN
-    WHERE s.status = "teacher" AND r.ISBN = new.ISBN  AND DATEDIFF(CURDATE(),r.reservation_date) <7 GROUP BY r.school_users_id HAVING COUNT(*)= 1))  THEN 
+    WHERE s.status = "teacher" AND  r.school_users_id = new.school_users_id  AND DATEDIFF(CURDATE(),r.reservation_date) <7 GROUP BY r.school_users_id HAVING COUNT(*)= 1))  THEN 
       SIGNAL SQLSTATE '45000'
            SET MESSAGE_TEXT = 'check constraint on reservations failed - A teacher can only make 1 reservations a week.';
     END IF;
- IF(new.school_users_id = (select school_users_id from borrowings WHERE return_date IS NULL AND  datediff(CURDATE(),due_date)>=1 ) )  THEN 
+ IF(new.school_users_id = (select school_users_id from borrowings WHERE  datediff(return_date,due_date)>=1 ) )  THEN 
  SIGNAL SQLSTATE '45000'
            SET MESSAGE_TEXT = 'check constraint on reservations failed - A user cannot make reservation if a book has not been returned on time.';
     END IF;
@@ -312,7 +312,7 @@ CREATE TRIGGER chk_borrowings BEFORE INSERT ON borrowings
 FOR EACH ROW 
 BEGIN 
 IF (new.school_users_id = (SELECT bor.school_users_id from borrowings bor INNER JOIN school_users s ON s.school_users_id = bor.school_users_id INNER JOIN books b ON  b.ISBN = bor.ISBN
-    WHERE s.status = "student"   and s.school_users_id=new.school_users_id   AND DATEDIFF(CURDATE(),bor.borrowing_date) <7 GROUP BY bor.school_users_id HAVING COUNT(*)= 2)  ) THEN 
+    WHERE s.status = "student"   and s.school_users_id=new.school_users_id    AND bor.borrowing_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY bor.school_users_id HAVING COUNT(*)= 2)  ) THEN 
       SIGNAL SQLSTATE '45000'
            SET MESSAGE_TEXT = 'check constraint on  borrowings failed - A student can only borrow 2 books a week.';
     END IF;
@@ -325,7 +325,7 @@ IF (new.school_users_id = (SELECT bor.school_users_id from borrowings bor INNER 
            SET MESSAGE_TEXT = 'check constraint on  borrowings failed - A teacher can only borrow 1 book a week.';
     END IF;
     
-IF (new.school_users_id = (SELECT school_users_id from borrowings WHERE new.school_users_id =school_users_id and  (return_date is null  OR  DATEDIFF(CURDATE(),due_date) > 7)) ) THEN
+IF (new.school_users_id = (SELECT school_users_id from borrowings WHERE new.school_users_id =school_users_id and    DATEDIFF(return_date,due_date) >=1) ) THEN
 	 SIGNAL SQLSTATE '45000'
            SET MESSAGE_TEXT = 'check constraint on  borrowings failed - A user cannot borrow a book  if returns are delayed or still open.';
 	 END IF;
@@ -336,7 +336,6 @@ IF (new.ISBN = (SELECT ISBN FROM books WHERE avail_copies = 0 AND ISBN = new.ISB
 	 END IF;
 END$ 
 DELIMITER ; 
-
 -- ---------------decrease available copies of a book when it gets borrowed and increae it when it gets returned --------------------------------------
 DELIMITER $ 
 CREATE TRIGGER decrease_avail_copies AFTER INSERT ON borrowings
@@ -362,6 +361,8 @@ BEGIN
 
 END$ 
 DELIMITER ; 
+
+
 
 -- -------------------------------------------------------------------------------
 -- Indexes
