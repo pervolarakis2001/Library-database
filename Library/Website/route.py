@@ -1607,11 +1607,9 @@ def find_book_operator():
             column_names = [i[0] for i in cur.description]
             books = [dict(zip(column_names, entry)) for entry in cur.fetchall()]
             
-            if cur.fetchall()  == None:
-                flash("book not found",category="error")
-            else:
-                 return  render_template("books.html",books= books,searched=True)
             cur.close()
+            return  render_template("books.html",books= books,searched=True)
+           
        return  render_template("books.html",books= books,searched=True)
 
 @app.route("/find_rating_op",methods=['GET','POST'])
