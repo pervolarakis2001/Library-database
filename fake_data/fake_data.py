@@ -238,11 +238,11 @@ for i in range(no_borrowings//5):
     school_user_bor.append(school_users_4)
     school_user_bor.append(school_users_5)
    
-    borrwing_date = f.date_between_dates(date_start=datetime(2023,4,26), date_end=datetime(2023,4,26))
-    due_date = f.date_between_dates(date_start=datetime(2023,5,3), date_end=datetime(2023,5,3))
+    borrwing_date = f.date_between_dates(date_start=datetime(2023,3,3), date_end=datetime(2023,3,6))
+    due_date = f.date_between_dates(date_start=datetime(2023,3,7), date_end=datetime(2023,3,15))
     return_date = due_date
 
-    content += f'INSERT INTO {table_name} ({",".join(table_columns)}) VALUES ("{ISBN_1}","{operator_id_1}","{borrowed_id_1}","{school_users_1}","{borrwing_date}","{due_date}","{return_date}");\n'
+    content += f'INSERT INTO {table_name} ({",".join(table_columns)}) VALUES ("{ISBN_1}","{operator_id_1}","{borrowed_id_1}","{school_users_1}","{borrwing_date}","{due_date}",NULL);\n'
     content += f'INSERT INTO {table_name} ({",".join(table_columns)}) VALUES ("{ISBN_2}","{operator_id_2}","{borrowed_id_2}","{school_users_2}","{borrwing_date}","{due_date}","{return_date}");\n'
     content += f'INSERT INTO {table_name} ({",".join(table_columns)}) VALUES ("{ISBN_3}","{operator_id_3}","{borrowed_id_3}","{school_users_3}","{borrwing_date}","{due_date}","{return_date}");\n'
     content += f'INSERT INTO {table_name} ({",".join(table_columns)}) VALUES ("{ISBN_4}","{operator_id_4}","{borrowed_id_4}","{school_users_4}","{borrwing_date}","{due_date}","{return_date}");\n'
@@ -258,8 +258,8 @@ for i in range(10):
     borrowed_id = 51+i
     school_users_id = school_users_id_1[i]
     
-    borrwing_date = f.date_between_dates(date_start=datetime(2023,8,i+1), date_end=datetime(2023,8,i+1))
-    due_date =f.date_between_dates(date_start=datetime(2023,8,i+1), date_end=datetime(2023,8,i+1))
+    borrwing_date = f.date_between_dates(date_start=datetime(2023,3,3), date_end=datetime(2023,3,6))
+    due_date = f.date_between_dates(date_start=datetime(2023,3,7), date_end=datetime(2023,3,15))
     return_date = due_date
     content += f'INSERT INTO {table_name} ({",".join(table_columns)}) VALUES ("{ISBN}","{operator_id}","{borrowed_id}","{school_users_id}","{borrwing_date}","{due_date}","{return_date}");\n'
     borrowed_ISBN[ISBN] = operator_id 
@@ -271,8 +271,8 @@ for i in range(10):
     borrowed_id = 61+i
     school_users_id = school_users_id_4[i]
     
-    borrwing_date = f.date_between_dates(date_start=datetime(2023,8,i+1), date_end=datetime(2023,8,i+1))
-    due_date =f.date_between_dates(date_start=datetime(2023,8,i+1), date_end=datetime(2023,8,i+1))
+    borrwing_date = f.date_between_dates(date_start=datetime(2023,3,3), date_end=datetime(2023,3,6))
+    due_date = f.date_between_dates(date_start=datetime(2023,3,7), date_end=datetime(2023,3,15))
     return_date = due_date
     content += f'INSERT INTO {table_name} ({",".join(table_columns)}) VALUES ("{ISBN}","{operator_id_1}","{borrowed_id}","{school_users_id}","{borrwing_date}","{due_date}","{return_date}");\n'
     borrowed_ISBN[ISBN] = operator_id 
@@ -291,7 +291,7 @@ for i in range(20,40):
     print(len(school_users_id_5))
        
     reservation_id = 400 + fake.unique.random_int(min=0, max=no_reservations-1)
-    reservation_date =  f.date_between_dates(date_start=datetime(2023,8,26), date_end=datetime(2023,9,3))
+    reservation_date =  f.date_between_dates(date_start=datetime(2023,4,6), date_end=datetime(2023,4,15))
     waiting = random.choice([True,False])  
     cancels = random.choice([False]) 
     
