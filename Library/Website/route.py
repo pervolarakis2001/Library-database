@@ -1,14 +1,11 @@
 from flask import Flask, Blueprint, render_template, request, flash, session, redirect, url_for, abort
 from flask_mysqldb import MySQL
-from flask_login import login_user, login_required, logout_user, current_user
 import MySQLdb.cursors
 from Website import app, db  # initially created by __init__.py, need to be used here
 from Website.model import *
-import subprocess
 from datetime import date
 import subprocess
-import os 
-import shutil
+
 
 @app.route("/")
 def index():
@@ -1189,7 +1186,8 @@ def find_book_user():
             title = request.form.get('title')
             category = request.form.get('category')
             author = request.form.get('author')
-            
+            print(author)
+            print(category)
             query = f"""
             SELECT b.isbn,b.title,b.publisher, b.num_of_pages, b.avail_copies, b.language, a.author, c.category FROM books b  inner join author_table a on a.ISBN = b.ISBN inner join school sch on sch.school_id = b.school_id 
             inner join category_table c on c.ISBN= b.ISBN 
@@ -2056,25 +2054,28 @@ def borrowingaddman():
 def borrowingaddmanually():
     cur = db.connection.cursor()
     if(request.method == "POST"):
-        
-        isbn =session.get('isbn_man')
-        
-        id =  request.form['id']
-        bor_day = date.today()
-        cur.execute("SELECT MAX(borrowed_id) as user FROM borrowings")
-        borrowed_id= cur.fetchone()
-        print(isbn)
-        borrowed_id =borrowed_id[0]
-        borrowed_id =  borrowed_id + 1
+        try:
+            isbn =session.get('isbn_man')
+            
+            id =  request.form['id']
+            bor_day = date.today()
+            cur.execute("SELECT MAX(borrowed_id) as user FROM borrowings")
+            borrowed_id= cur.fetchone()
+            print(isbn)
+            borrowed_id =borrowed_id[0]
+            borrowed_id =  borrowed_id + 1
 
-        # Perform database operations
-        query = f"""
-        INSERT INTO borrowings (ISBN,operator_id,borrowed_id,school_users_id,borrowing_date,due_date,return_date) VALUES ('{isbn}',{session.get('user_id')},{borrowed_id},{id},'{bor_day}',NULL,NULL);
-        """
-        cur.execute(query)
-        db.connection.commit()
-        
-        flash('borrowing submited',category='success')
+            # Perform database operations
+            query = f"""
+            INSERT INTO borrowings (ISBN,operator_id,borrowed_id,school_users_id,borrowing_date,due_date,return_date) VALUES ('{isbn}',{session.get('user_id')},{borrowed_id},{id},'{bor_day}',NULL,NULL);
+            """
+            cur.execute(query)
+            db.connection.commit()
+            
+            flash('borrowing submited',category='success')
+        except Exception as e:
+            error_message = str(e)
+            return render_template('error.html', error_message=error_message)
     return render_template("add_bo_manualy.html")
 
 @app.route('/delete_book', methods=['GET','POST'])
