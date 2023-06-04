@@ -382,5 +382,5 @@ CREATE UNIQUE INDEX idx_return_date ON borrowings (return_date);
 
 CREATE UNIQUE INDEX idx_reservation_date ON reservations (reservation_date);
 
-
+CREATE UNIQUE INDEX idx_approval ON users (approved);
 
