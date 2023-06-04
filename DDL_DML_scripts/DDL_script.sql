@@ -367,13 +367,13 @@ DELIMITER ;
 -- -------------------------------------------------------------------------------
 -- Indexes
 -- -------------------------------------------------------------------------------
-CREATE UNIQUE INDEX idx_first_last_name ON users (First_name, Last_name);
+CREATE INDEX idx_first_last_name ON users (First_name, Last_name);
 
-CREATE UNIQUE INDEX idx_category ON category_table (category);
+CREATE INDEX idx_category ON category_table (category);
 
-CREATE UNIQUE INDEX idx_author ON author_table (author);
+CREATE INDEX idx_author ON author_table (author);
 
-CREATE UNIQUE INDEX idx_email ON email_table (email);
+CREATE INDEX idx_email ON email_table (email);
 
 CREATE INDEX idx_borrowing_date ON borrowings (borrowing_date);
 
