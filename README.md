@@ -1,7 +1,7 @@
 # e-Library database
 Project for the Databases 2023 class in NTUA ECE that simulates a Database for School Library Network in Public Schools
 # Author:
-ΠΕΡΒΟΛΑΡΑΚΗΣ ΔΗΜΗΤΡΙΟΣ  9119067\
+ΠΕΡΒΟΛΑΡΑΚΗΣ ΔΗΜΗΤΡΙΟΣ  9119067
 
 
 # App 
